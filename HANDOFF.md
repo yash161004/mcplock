@@ -13,7 +13,7 @@ that look wrong against the original spec and are not.
 | 1 — normalize / hash / store / `snapshot` | done (`7daeed0`) |
 | 2 — diff / severity / `check` | done (`d51dae0`) |
 | 3 — ambiguity + scope lint / `lint` | done (`6d53d2a`) |
-| 4 — real-server sweep | **in progress — see below** |
+| 4 — real-server sweep | done (11/12 reached, findings F-001..F-006 candidate-logged) |
 | 4 — LLM hypothesis test | **stopped, deliberately** — [docs/PHASE4_RESULTS.md](docs/PHASE4_RESULTS.md) |
 | 5 — report polish + GitHub Action | not started |
 | 6 — ship | not started |

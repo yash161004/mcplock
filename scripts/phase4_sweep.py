@@ -35,13 +35,13 @@ SERVERS: list[tuple[str, str]] = [
     ("memory", "npx -y @modelcontextprotocol/server-memory"),
     ("sequential-thinking", "npx -y @modelcontextprotocol/server-sequential-thinking"),
     ("everything", "npx -y @modelcontextprotocol/server-everything"),
-    ("git", "uvx mcp-server-git"),
-    ("fetch", "uvx mcp-server-fetch"),
-    ("time", "uvx mcp-server-time"),
+    ("git", f'uvx --with "mcp<2" mcp-server-git --repository "{REPO}"'),
+    ("fetch", 'uvx --with "mcp<2" mcp-server-fetch'),
+    ("time", 'uvx --with "mcp<2" mcp-server-time'),
     ("context7", "npx -y @upstash/context7-mcp"),
     ("duckduckgo", "npx -y duckduckgo-mcp-server"),
     ("playwright", "npx -y @playwright/mcp@latest"),
-    ("sqlite", "uvx mcp-server-sqlite --db-path :memory:"),
+    ("sqlite", 'uvx --with "mcp<2" mcp-server-sqlite --db-path :memory:'),
     ("brave-search", "npx -y @modelcontextprotocol/server-brave-search"),
 ]
 
