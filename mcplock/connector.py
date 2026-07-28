@@ -28,11 +28,26 @@ class ServerTarget:
     command: str | None = None
     args: tuple[str, ...] = ()
     url: str | None = None
+    # Extra environment for a stdio server, as (key, value) pairs. The SDK
+    # inherits only a small safe allowlist (PATH, HOME, ...), which is the right
+    # default — anything a server actually needs has to be named explicitly.
+    # Never persisted: these carry API tokens for real-world servers.
+    env: tuple[tuple[str, str], ...] = ()
+
+    def env_dict(self) -> dict[str, str]:
+        return dict(self.env)
 
     @classmethod
-    def from_command(cls, command_line: str) -> "ServerTarget":
-        """Parse a stdio command line, e.g. ``npx -y @scope/server /tmp``."""
-        parts = shlex.split(command_line, posix=False)
+    def from_command(cls, command_line: str, env: dict[str, str] | None = None) -> "ServerTarget":
+        """Parse a stdio command line, e.g. ``npx -y @scope/server /tmp``.
+
+        ``posix=False`` keeps Windows backslashes intact, but it also leaves the
+        quote characters attached to the token, so ``"C:\\Program Files\\x.exe"``
+        would be passed to the OS with its quotes still on and fail to spawn.
+        Stripping one matching pair per token fixes that without re-enabling
+        backslash escaping.
+        """
+        parts = [_strip_quotes(part) for part in shlex.split(command_line, posix=False)]
         if not parts:
             raise ValueError("empty server command")
         return cls(
@@ -41,6 +56,7 @@ class ServerTarget:
             source=command_line,
             command=parts[0],
             args=tuple(parts[1:]),
+            env=tuple(sorted((env or {}).items())),
         )
 
     @classmethod
@@ -51,6 +67,14 @@ class ServerTarget:
             source=url,
             url=url,
         )
+
+
+def _strip_quotes(token: str) -> str:
+    """Remove one matching pair of surrounding quotes, if present."""
+    for quote in ('"', "'"):
+        if len(token) >= 2 and token.startswith(quote) and token.endswith(quote):
+            return token[1:-1]
+    return token
 
 
 def derive_server_id(connection: str) -> str:
@@ -80,7 +104,11 @@ async def fetch_tools(target: ServerTarget) -> list[dict[str, Any]]:
 
 
 async def _fetch_tools_stdio(target: ServerTarget) -> list[dict[str, Any]]:
-    params = StdioServerParameters(command=target.command, args=list(target.args))
+    params = StdioServerParameters(
+        command=target.command,
+        args=list(target.args),
+        env=target.env_dict() or None,
+    )
     async with stdio_client(params) as (read, write):
         async with ClientSession(read, write) as session:
             return await _list_all_tools(session)

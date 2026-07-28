@@ -23,6 +23,15 @@ from .normalize import normalize_tools
 SCHEMA_VERSION = 1
 
 
+class IncomparableSnapshotsError(ValueError):
+    """Two snapshots cannot be meaningfully diffed.
+
+    Raised instead of returning a diff in which every tool looks changed —
+    a false "everything drifted" report is worse than a hard failure, because
+    it trains people to ignore the tool.
+    """
+
+
 def mcplock_home() -> Path:
     """Root for local state. ``MCPLOCK_HOME`` overrides it, which tests rely on."""
     override = os.environ.get("MCPLOCK_HOME")
@@ -95,7 +104,7 @@ def load(server_id: str) -> dict[str, Any] | None:
 
     stored_model = snapshot.get("hash_model_version")
     if stored_model != HASH_MODEL_VERSION:
-        raise ValueError(
+        raise IncomparableSnapshotsError(
             f"{path} was written with hash model v{stored_model}, but this build uses "
             f"v{HASH_MODEL_VERSION}. Its hashes are not comparable — re-run `mcplock "
             f"snapshot` to establish a fresh baseline."

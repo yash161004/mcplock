@@ -39,3 +39,6 @@ packages = ["mcplock"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+markers = [
+    "e2e: spawns a real MCP server subprocess and drives the CLI end to end",
+]
