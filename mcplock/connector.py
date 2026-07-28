@@ -18,9 +18,14 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, repr=False)
 class ServerTarget:
-    """How to reach one MCP server, plus the id its snapshots are stored under."""
+    """How to reach one MCP server, plus the id its snapshots are stored under.
+
+    ``repr`` is hand-written to redact ``env`` values. The generated one printed
+    them in full, which turns any future ``f"...{target}"``, log line, or failing
+    pytest assertion into a credential disclosure.
+    """
 
     server_id: str
     transport: str  # "stdio" | "http"
@@ -36,6 +41,15 @@ class ServerTarget:
 
     def env_dict(self) -> dict[str, str]:
         return dict(self.env)
+
+    def __repr__(self) -> str:
+        """Never render env values. Keys are safe and useful; values are not."""
+        redacted = ", ".join(f"{key}=<redacted>" for key, _ in self.env)
+        return (
+            f"ServerTarget(server_id={self.server_id!r}, transport={self.transport!r}, "
+            f"source={self.source!r}, command={self.command!r}, args={self.args!r}, "
+            f"url={self.url!r}, env=({redacted}))"
+        )
 
     @classmethod
     def from_command(cls, command_line: str, env: dict[str, str] | None = None) -> "ServerTarget":

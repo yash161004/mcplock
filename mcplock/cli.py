@@ -7,6 +7,7 @@ high-severity drift), ``lint`` (ambiguity + scope findings).
 from __future__ import annotations
 
 import asyncio
+import os
 from pathlib import Path
 
 import typer
@@ -47,18 +48,38 @@ def fetch_or_exit(target: ServerTarget) -> list[dict]:
         raise typer.Exit(code=2) from exc
 
 
-def parse_env(pairs: list[str] | None) -> dict[str, str]:
-    """Parse repeated ``--env KEY=VALUE`` options."""
+def parse_env(pairs: list[str] | None, forwarded: list[str] | None = None) -> dict[str, str]:
+    """Parse ``--env KEY=VALUE`` and ``--env-from NAME`` options.
+
+    A malformed entry is reported by position, never by content: the thing most
+    likely to be malformed is a pasted secret, and echoing it back into the
+    terminal and shell history is exactly what we are trying to avoid.
+    """
     parsed: dict[str, str] = {}
-    for pair in pairs or []:
+
+    for index, pair in enumerate(pairs or [], start=1):
         key, separator, value = pair.partition("=")
         if not separator or not key:
-            raise typer.BadParameter(f"--env expects KEY=VALUE, got {pair!r}")
+            raise typer.BadParameter(
+                f"--env entry #{index} is not KEY=VALUE (its content is not echoed, "
+                f"in case it is a secret)"
+            )
         parsed[key] = value
+
+    for name in forwarded or []:
+        if name not in os.environ:
+            raise typer.BadParameter(f"--env-from {name}: not set in this environment")
+        parsed[name] = os.environ[name]
+
     return parsed
 
 
-def resolve_target(server: str, transport: str, env: list[str] | None = None) -> ServerTarget:
+def resolve_target(
+    server: str,
+    transport: str,
+    env: list[str] | None = None,
+    env_from: list[str] | None = None,
+) -> ServerTarget:
     """Build a ServerTarget from the CLI's ``server`` argument.
 
     ``server`` alone determines ``server_id``, so ``--env`` can differ between a
@@ -68,11 +89,11 @@ def resolve_target(server: str, transport: str, env: list[str] | None = None) ->
         transport = "http" if server.startswith(("http://", "https://")) else "stdio"
 
     if transport == "http":
-        if env:
-            raise typer.BadParameter("--env only applies to stdio servers")
+        if env or env_from:
+            raise typer.BadParameter("--env/--env-from only apply to stdio servers")
         return ServerTarget.from_url(server)
     if transport == "stdio":
-        return ServerTarget.from_command(server, env=parse_env(env))
+        return ServerTarget.from_command(server, env=parse_env(env, env_from))
     raise typer.BadParameter(f"unsupported transport: {transport}")
 
 
@@ -81,7 +102,16 @@ ENV_OPTION = typer.Option(
     "--env",
     help="KEY=VALUE passed to a stdio server (repeatable). The MCP SDK inherits "
     "only a small safe allowlist, so anything else must be named here. Never "
-    "written to the snapshot.",
+    "written to the snapshot. For secrets prefer --env-from, which keeps the "
+    "value out of the command line.",
+)
+
+ENV_FROM_OPTION = typer.Option(
+    None,
+    "--env-from",
+    help="Forward NAME from mcplock's own environment to the server (repeatable). "
+    "Preferred for credentials: unlike --env, the value never appears in argv, "
+    "so it is not visible to other processes or recorded in shell history.",
 )
 
 
@@ -96,9 +126,10 @@ def snapshot(
         "auto", "--transport", help="stdio | http | auto (infer from the argument)."
     ),
     env: list[str] = ENV_OPTION,
+    env_from: list[str] = ENV_FROM_OPTION,
 ) -> None:
     """Fetch a server's tools and save them as the pinned baseline."""
-    target = resolve_target(server, transport, env)
+    target = resolve_target(server, transport, env, env_from)
     tools = fetch_or_exit(target)
 
     previous = store.load(target.server_id)
@@ -128,6 +159,7 @@ def check(
         None, "--json", help="Also write the machine-readable report here."
     ),
     env: list[str] = ENV_OPTION,
+    env_from: list[str] = ENV_FROM_OPTION,
 ) -> None:
     """Re-scan a server and fail if it drifted from its pinned baseline.
 
@@ -139,7 +171,7 @@ def check(
     if fail_on not in SEVERITY_ORDER:
         raise typer.BadParameter(f"--fail-on must be one of: {', '.join(SEVERITY_ORDER)}")
 
-    target = resolve_target(server, transport, env)
+    target = resolve_target(server, transport, env, env_from)
 
     try:
         baseline = store.load(target.server_id)
