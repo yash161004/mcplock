@@ -7,7 +7,7 @@ name = "mcplock"
 version = "0.1.0"
 description = "Pin, diff, and lint MCP tool definitions — npm audit / SRI for MCP tools."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = { text = "MIT" }
 dependencies = [
     "mcp>=1.2.0",
@@ -18,6 +18,17 @@ dependencies = [
 [project.optional-dependencies]
 lint = ["scikit-learn>=1.4.0"]
 dev = ["pytest>=8.0.0", "pytest-asyncio>=0.23.0"]
+
+# Phase 4 only: record/replay a real LLM-backed agent against a server and
+# evaluate what it actually did. Declared now so config is not restructured later.
+#
+# The PyPI distribution is "openeval-core", NOT "openeval" — the bare name is an
+# unrelated abandoned pypa sampleproject stub (0.0.3, "A small example package").
+# Do not "fix" this to `openeval`.
+validate = [
+    "fixtura>=1.0.7",
+    "openeval-core>=0.1.2",
+]
 
 [project.scripts]
 mcplock = "mcplock.cli:app"
