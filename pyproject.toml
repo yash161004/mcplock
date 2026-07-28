@@ -16,7 +16,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-lint = ["scikit-learn>=1.4.0"]
 dev = ["pytest>=8.0.0", "pytest-asyncio>=0.23.0"]
 
 # Phase 4 only: record/replay a real LLM-backed agent against a server and
@@ -25,9 +24,15 @@ dev = ["pytest>=8.0.0", "pytest-asyncio>=0.23.0"]
 # The PyPI distribution is "openeval-core", NOT "openeval" — the bare name is an
 # unrelated abandoned pypa sampleproject stub (0.0.3, "A small example package").
 # Do not "fix" this to `openeval`.
+#
+# The floor matters as much as the name: openeval-core 0.1.2 resolves cleanly but
+# does not contain openeval/adapters/fixtura.py, which landed after it shipped
+# (0.2.0 was never published). Pinning >=0.1.2 installs fine and then fails at
+# import, which `pip install --dry-run` cannot catch — it resolves, it never
+# imports. Verify this extra with a real import in a clean venv.
 validate = [
     "fixtura>=1.0.7",
-    "openeval-core>=0.1.2",
+    "openeval-core>=0.2.1",
 ]
 
 [project.scripts]

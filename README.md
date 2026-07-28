@@ -6,14 +6,16 @@ mcplock pins what an agent is allowed to trust about a tool, detects silent
 drift in tool definitions, and flags ambiguous or unscoped tools before an agent
 misuses them.
 
-> **Status: pre-v0.1, under active development.** `snapshot` and `check` work
-> against real servers. `lint` is not implemented yet.
+> **Status: pre-v0.1, under active development.** `snapshot`, `check`, and
+> `lint` work against real servers. Reporting polish and the GitHub Action are
+> next.
 
 ## Usage
 
 ```bash
 mcplock snapshot "npx -y @modelcontextprotocol/server-filesystem ./data"
 mcplock check "npx -y @modelcontextprotocol/server-filesystem ./data"
+mcplock lint "npx -y @modelcontextprotocol/server-filesystem ./data"
 ```
 
 Baselines are stored as flat JSON under `~/.mcplock/snapshots/` (override the
@@ -28,11 +30,30 @@ inherits only a small safe allowlist when spawning a stdio server, so anything
 else must be named explicitly. `--env` values are never written to the snapshot,
 and are not part of the server identity.
 
-Not yet implemented:
+`lint` exits 0 even with findings unless `--strict`. These are judgment calls
+needing human review, not the binary facts `check` deals in — failing a build on
+a heuristic is how a linter gets switched off.
 
-```bash
-mcplock lint "npx -y @modelcontextprotocol/server-filesystem ./data"
-```
+## Linting
+
+**Ambiguity** — "could an agent pick the wrong one of these two?" Description
+similarity alone does not answer that: on the 14 real tools of the official
+filesystem server, TF-IDF cosine at the 85% threshold flags **0 of 91 pairs**,
+and the confusable and distinct pairs are not separable by *any* single cosine
+threshold. So the check is gated on **schema substitutability** — can one set of
+arguments satisfy both tools? — then scored on name affinity and description
+similarity, with a veto on opposing verbs (`read`/`write`, `create`/`delete`).
+
+On that server the gate removes 63 of 91 pairs before scoring, and 4 are
+flagged: the three-way `read_file`/`read_text_file`/`read_media_file` cluster and
+`list_directory`/`list_directory_with_sizes`. The threshold sits in a 0.33–0.50
+gap between the two classes.
+
+**Scope** — two checks. A destructive verb with no boundary language anywhere
+(strengthened by unbounded words like "arbitrary" or "any file on the host"),
+and a *convention departure*: a tool omitting a boundary statement the rest of
+its own server makes. Neither inspects behaviour, so both are documentation
+gaps, never vulnerabilities.
 
 ## Severity
 
