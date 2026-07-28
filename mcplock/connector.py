@@ -24,6 +24,7 @@ class ServerTarget:
 
     server_id: str
     transport: str  # "stdio" | "http"
+    source: str = ""  # the command line or URL exactly as the user gave it
     command: str | None = None
     args: tuple[str, ...] = ()
     url: str | None = None
@@ -37,13 +38,19 @@ class ServerTarget:
         return cls(
             server_id=derive_server_id(command_line),
             transport="stdio",
+            source=command_line,
             command=parts[0],
             args=tuple(parts[1:]),
         )
 
     @classmethod
     def from_url(cls, url: str) -> "ServerTarget":
-        return cls(server_id=derive_server_id(url), transport="http", url=url)
+        return cls(
+            server_id=derive_server_id(url),
+            transport="http",
+            source=url,
+            url=url,
+        )
 
 
 def derive_server_id(connection: str) -> str:
