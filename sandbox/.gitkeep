@@ -1,0 +1,2 @@
+Empty directory used as the allowed-directories argument when capturing the
+filesystem-server fixture. Kept so `scripts/capture_fixture.py` reproduces.
