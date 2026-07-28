@@ -18,9 +18,31 @@ positive (a noisy diff) rather than a false negative (missed drift):
 from __future__ import annotations
 
 import json
+import re
+import unicodedata
 from collections import Counter
 from dataclasses import dataclass
 from typing import Any
+
+_WORD = re.compile(r"[a-z0-9]+")
+
+
+def scannable_text(text: str) -> str:
+    """Drop Unicode format characters before any text analysis.
+
+    ``de<ZWSP>lete`` reads as "delete" to a human and to an LLM, but tokenizes
+    as two words. Hashing deliberately keeps zero-width characters — they *are*
+    drift — while every heuristic that reads meaning ignores them, so neither
+    the severity scan nor the linters can be evaded by an invisible edit.
+    """
+    return "".join(ch for ch in text if unicodedata.category(ch) != "Cf")
+
+
+def word_tokens(text: str | None) -> list[str]:
+    """Lowercase word tokens, with format characters stripped first."""
+    if not text:
+        return []
+    return _WORD.findall(scannable_text(text).lower())
 
 
 @dataclass(frozen=True)

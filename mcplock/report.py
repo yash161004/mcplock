@@ -72,8 +72,60 @@ def _render_description_change(finding, console: Console) -> None:
     console.print(f"{'':>15} [green]+ {new!r}[/green]")
 
 
-def write_json(result: DiffResult, path: Path) -> Path:
-    """Write the machine-readable report CI consumes."""
+def render_lint(findings: list, server_id: str, tool_count: int, console: Console) -> None:
+    """Print lint findings grouped by type.
+
+    Lint findings are judgment calls, not facts like a hash mismatch, so each one
+    carries the signals behind it — a reader has to be able to disagree.
+    """
+    if not findings:
+        console.print(
+            f"[green]No ambiguity or scope findings[/green] across {tool_count} tools "
+            f"on {server_id}"
+        )
+        return
+
+    console.print(f"Lint findings for [bold]{server_id}[/bold] ({tool_count} tools)\n")
+
+    for finding in findings:
+        record = finding.to_dict()
+        related = record.get("related_tool")
+        heading = f"{record['tool_name']} / {related}" if related else record["tool_name"]
+        score = record.get("similarity_score")
+        suffix = f"  [dim]score {score:.2f}[/dim]" if score is not None else ""
+
+        console.print(f"[yellow]{record['finding_type']:>14}[/yellow]  [bold]{heading}[/bold]{suffix}")
+        console.print(f"{'':>16}{record['explanation']}")
+
+        signals = ", ".join(f"{k}={v}" for k, v in (record.get("signals") or {}).items())
+        if signals:
+            console.print(f"{'':>16}[dim]{signals}[/dim]")
+        console.print()
+
+    console.print(f"[bold]{len(findings)} finding(s)[/bold] — review each before acting on it")
+
+
+def lint_report_dict(findings: list, server_id: str, tool_count: int) -> dict:
+    """The machine-readable lint report."""
+    return {
+        "server_id": server_id,
+        "tool_count": tool_count,
+        "counts": {
+            finding_type: sum(1 for f in findings if f.finding_type == finding_type)
+            for finding_type in ("ambiguity", "missing_scope")
+        },
+        "findings": [f.to_dict() for f in findings],
+    }
+
+
+def write_json(payload, path: Path) -> Path:
+    """Write a machine-readable report CI consumes.
+
+    Accepts a DiffResult or an already-built dict, so `check` and `lint` share
+    one writer and one on-disk shape.
+    """
+    document = payload.to_dict() if isinstance(payload, DiffResult) else payload
+
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(result.to_dict(), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(document, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return path

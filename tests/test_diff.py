@@ -9,22 +9,16 @@ from __future__ import annotations
 
 import copy
 import json
-import os
-import subprocess
-import sys
 from pathlib import Path
 
 import pytest
+from conftest import SERVER_COMMAND, run_cli
 from drift_server import BASELINE, variant_tools
 
 from mcplock import store
 from mcplock.connector import ServerTarget
 from mcplock.diff import CRITICAL, HIGH, INFORMATIONAL, MEDIUM, diff_snapshots
 from mcplock.store import IncomparableSnapshotsError
-
-DRIFT_SERVER = Path(__file__).parent / "drift_server.py"
-SERVER_COMMAND = f'"{sys.executable}" "{DRIFT_SERVER}"'
-
 
 def snapshot_for(variant: str, timestamp: str = "2026-01-01T00:00:00+00:00") -> dict:
     target = ServerTarget.from_command(SERVER_COMMAND)
@@ -180,37 +174,6 @@ class TestHashModelGuard:
 
         with pytest.raises(IncomparableSnapshotsError, match="different server"):
             diff_snapshots(baseline, current)
-
-
-def run_cli(*args: str, home: Path, variant: str) -> subprocess.CompletedProcess[str]:
-    """Drive the real CLI.
-
-    The variant reaches the server through ``--env``, not through this process's
-    environment: the MCP SDK deliberately inherits only a small safe allowlist
-    when spawning a stdio server, so an inherited variable would never arrive.
-    ``--env`` is not part of the server command, so server_id stays identical
-    between the snapshot and the check.
-    """
-    env = {
-        **os.environ,
-        "MCPLOCK_HOME": str(home),
-        "PYTHONIOENCODING": "utf-8",
-    }
-    return subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "mcplock.cli",
-            *args,
-            "--env",
-            f"MCPLOCK_DRIFT_VARIANT={variant}",
-        ],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        env=env,
-        timeout=120,
-    )
 
 
 @pytest.mark.e2e

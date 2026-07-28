@@ -25,12 +25,11 @@ distinguish an annotation flip from a reworded sentence:
 
 from __future__ import annotations
 
-import re
-import unicodedata
 from dataclasses import dataclass, field
 from typing import Any
 
 from .hasher import BEHAVIOURAL_ANNOTATIONS
+from .normalize import word_tokens
 from .store import IncomparableSnapshotsError
 
 CRITICAL = "critical"
@@ -44,8 +43,6 @@ SEVERITY_ORDER = (INFORMATIONAL, MEDIUM, HIGH, CRITICAL)
 # Brief §2, Phase 2. Kept to exactly these five — resist growing this into a
 # scoring model in v0.1.
 TRIGGER_WORDS = frozenset({"execute", "delete", "send", "all", "admin"})
-
-_WORD = re.compile(r"[a-z0-9]+")
 
 
 def severity_rank(severity: str) -> int:
@@ -114,21 +111,10 @@ class DiffResult:
         }
 
 
-def _scannable(text: str) -> str:
-    """Drop Unicode format characters before keyword scanning.
-
-    ``de<ZWSP>lete`` reads as "delete" to a human and to an LLM, but tokenizes
-    as two words. Hashing deliberately keeps zero-width characters (they *are*
-    drift); the keyword scan deliberately ignores them, so the severity
-    heuristic cannot be evaded by an invisible edit.
-    """
-    return "".join(ch for ch in text if unicodedata.category(ch) != "Cf")
-
-
 def _tokens(text: str | None) -> set[str]:
-    if not text:
-        return set()
-    return set(_WORD.findall(_scannable(text).lower()))
+    """Word set for keyword scanning. Format characters are stripped upstream,
+    so an invisible edit cannot hide a trigger word from the heuristic."""
+    return set(word_tokens(text))
 
 
 def _triggered(*texts: str | None) -> set[str]:

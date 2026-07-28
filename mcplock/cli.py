@@ -16,6 +16,8 @@ from rich.console import Console
 from . import report, store
 from .connector import ServerTarget, fetch_tools
 from .diff import HIGH, SEVERITY_ORDER, diff_snapshots, severity_rank
+from .lint.ambiguity import DEFAULT_THRESHOLD, find_ambiguities
+from .lint.scope import find_scope_issues
 from .store import IncomparableSnapshotsError
 
 app = typer.Typer(
@@ -207,6 +209,52 @@ def check(
             f"\n[bold red]{len(breaching)} finding(s) at or above "
             f"{fail_on}[/bold red] — failing."
         )
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def lint(
+    server: str = typer.Argument(..., help="Server command or streamable-HTTP URL."),
+    transport: str = typer.Option(
+        "auto", "--transport", help="stdio | http | auto (infer from the argument)."
+    ),
+    threshold: float = typer.Option(
+        DEFAULT_THRESHOLD,
+        "--threshold",
+        help="Ambiguity score above which a tool pair is reported.",
+    ),
+    json_report: Path | None = typer.Option(
+        None, "--json", help="Also write the machine-readable report here."
+    ),
+    strict: bool = typer.Option(
+        False, "--strict", help="Exit non-zero if there are any findings."
+    ),
+    env: list[str] = ENV_OPTION,
+    env_from: list[str] = ENV_FROM_OPTION,
+) -> None:
+    """Report tool pairs an agent could confuse, and tools that state no boundary.
+
+    Exits 0 even with findings unless ``--strict``. These are judgment calls
+    needing human review, not the binary facts `check` deals in — failing a
+    build on a heuristic is how a linter gets switched off.
+    """
+    target = resolve_target(server, transport, env, env_from)
+    tools = fetch_or_exit(target)
+
+    findings = [
+        *find_ambiguities(tools, threshold=threshold),
+        *find_scope_issues(tools),
+    ]
+
+    report.render_lint(findings, target.server_id, len(tools), console)
+
+    if json_report is not None:
+        report.write_json(
+            report.lint_report_dict(findings, target.server_id, len(tools)), json_report
+        )
+        console.print(f"[dim]wrote {json_report}[/dim]")
+
+    if strict and findings:
         raise typer.Exit(code=1)
 
 
