@@ -60,16 +60,16 @@ def render_diff(result: DiffResult, console: Console) -> None:
 
 
 def _render_description_change(finding, console: Console) -> None:
-    """Show the old and new description text.
+    """Show the old and new description text line by line for clean CLI and CI logs."""
+    old = (finding.old_value or {}).get("description")
+    new = (finding.new_value or {}).get("description")
 
-    Full word-level diffing lands in Phase 5; showing both texts is already
-    enough to judge a finding by eye, which is what v0.1 needs.
-    """
-    old = finding.old_value.get("description")
-    new = finding.new_value.get("description")
-
-    console.print(f"{'':>15} [red]- {old!r}[/red]")
-    console.print(f"{'':>15} [green]+ {new!r}[/green]")
+    if old is not None:
+        for line in str(old).splitlines():
+            console.print(f"{'':>15} [red]- {line}[/red]")
+    if new is not None:
+        for line in str(new).splitlines():
+            console.print(f"{'':>15} [green]+ {line}[/green]")
 
 
 def render_lint(findings: list, server_id: str, tool_count: int, console: Console) -> None:
