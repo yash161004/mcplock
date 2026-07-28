@@ -56,6 +56,27 @@ python scripts/phase4_experiment.py --runs 5
 
 No result has been estimated, simulated, or inferred for P1 or P3.
 
+### Decision (2026-07-28): P1/P3 will not be run
+
+The project owner chose to keep mcplock zero-cost and not fund an API account.
+The estimated spend was ~$0.18 for five runs; the decision was to spend nothing.
+
+**This is a deliberate stop, not an oversight.** Under the pre-registered
+decision rule, the hypothesis is therefore **permanently unresolved** unless
+someone later runs the harness. It must not be recorded as supported.
+
+Consequences to respect:
+
+- The `read_text_file` / `read_media_file` ambiguity finding has a **verified
+  consequence** (P2) and an **unverified trigger** (P1). Do not describe it
+  anywhere as demonstrated agent behaviour.
+- Do not substitute a cheaper model to get P1 cheaply. The claim is that a
+  *capable* agent still chooses wrong; a weaker model choosing wrong biases the
+  result toward confirmation and proves less.
+- The harness stays in the repo, working. `scripts/phase4_experiment.py --runs 5`
+  finishes it if an `ANTHROPIC_API_KEY` ever exists. The model is pinned to
+  `claude-sonnet-5`; changing it before the first run is fine, after is not.
+
 ## Harness pipeline — validated (not a result)
 
 fixtura recorder → `.trace` (zstd JSONL) → `openeval.adapters.fixtura` →
