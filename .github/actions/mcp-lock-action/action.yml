@@ -1,0 +1,68 @@
+name: 'mcplock check'
+description: 'Pin, diff, and verify MCP tool definitions against baseline snapshots in CI'
+branding:
+  icon: 'lock'
+  color: 'blue'
+
+inputs:
+  server:
+    description: 'Server command (e.g. "npx -y @modelcontextprotocol/server-filesystem ./data") or URL'
+    required: true
+  transport:
+    description: 'stdio | http | auto (infer from server argument)'
+    required: false
+    default: 'auto'
+  fail-on:
+    description: 'Lowest severity threshold to fail the build (critical | high | medium | informational)'
+    required: false
+    default: 'high'
+  json-report:
+    description: 'Optional file path to write machine-readable JSON report'
+    required: false
+    default: ''
+  env:
+    description: 'Space-separated KEY=VALUE environment variable pairs passed to stdio server'
+    required: false
+    default: ''
+  mcplock-version:
+    description: 'PyPI package specifier for mcplock or path to install'
+    required: false
+    default: 'mcplock'
+  python-version:
+    description: 'Python version for setup-python'
+    required: false
+    default: '3.11'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install mcplock
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install ${{ inputs.mcplock-version }}
+
+    - name: Run mcplock check
+      shell: bash
+      run: |
+        CMD_ARGS=()
+        if [ "${{ inputs.transport }}" != "auto" ]; then
+          CMD_ARGS+=("--transport" "${{ inputs.transport }}")
+        fi
+        if [ -n "${{ inputs.fail-on }}" ]; then
+          CMD_ARGS+=("--fail-on" "${{ inputs.fail-on }}")
+        fi
+        if [ -n "${{ inputs.json-report }}" ]; then
+          CMD_ARGS+=("--json" "${{ inputs.json-report }}")
+        fi
+        if [ -n "${{ inputs.env }}" ]; then
+          for pair in ${{ inputs.env }}; do
+            CMD_ARGS+=("--env" "$pair")
+          done
+        fi
+        mcplock check "${{ inputs.server }}" "${CMD_ARGS[@]}"

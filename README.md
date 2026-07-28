@@ -6,9 +6,8 @@ mcplock pins what an agent is allowed to trust about a tool, detects silent
 drift in tool definitions, and flags ambiguous or unscoped tools before an agent
 misuses them.
 
-> **Status: pre-v0.1, under active development.** `snapshot`, `check`, and
-> `lint` work against real servers. Reporting polish and the GitHub Action are
-> next.
+> **Status: pre-v0.1, under active development.** `snapshot`, `check`, `lint`,
+> and the GitHub Action are implemented.
 
 ## Usage
 
@@ -92,6 +91,44 @@ it indistinguishable from a typo fix.
 
 `title`, `outputSchema`, and `execution` are not hashed in v0.1; there is no
 concrete drift scenario for them yet.
+
+## CI
+
+mcplock provides a reusable composite GitHub Action to gate pull requests against tool-definition drift in CI.
+
+Add `.github/workflows/mcplock.yml` to your repository:
+
+```yaml
+name: Check MCP Tool Definitions
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify MCP Server Baseline
+        uses: yash161004/mcplock/.github/actions/mcp-lock-action@master
+        with:
+          server: 'npx -y @modelcontextprotocol/server-filesystem ./data'
+          fail-on: 'high'
+```
+
+### Action Inputs
+
+| Input | Description | Default |
+| --- | --- | --- |
+| `server` | Server command or streamable-HTTP URL | **Required** |
+| `transport` | `stdio` \| `http` \| `auto` | `auto` |
+| `fail-on` | Lowest severity threshold to fail build (`critical` \| `high` \| `medium` \| `informational`) | `high` |
+| `json-report` | Optional path to write machine-readable JSON report | `""` |
+| `env` | Space-separated `KEY=VALUE` environment variables for stdio server | `""` |
+| `python-version` | Python version for `setup-python` | `3.11` |
+| `mcplock-version` | PyPI version specifier for `mcplock` | `mcplock` |
 
 ## Development
 
