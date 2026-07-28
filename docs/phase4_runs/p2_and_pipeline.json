@@ -1,0 +1,49 @@
+{
+  "p2": {
+    "read_text_file": {
+      "raised": false,
+      "is_error": false,
+      "blocks": [
+        {
+          "type": "text",
+          "text": "\ufffdPNG\r\n\u001a\n\u0000\u0000\u0000\rIHDR\u0000\u0000\u0000@\u0000\u0000\u0000@\b\u0002\u0000\u0000\u0000%\u000b\ufffd\u0000\u0000\u0001FIDATx\ufffd\ufffd\ufffd\ufffd\u000e\ufffd \f\u0003P\ufffd\ufffd\ufffd\u066d\ufffd\u0018\ufffd\u0010\ufffd\u0616zYoO]\u000b8n\ufffd\ufffd\ufffd\ufffd\ufffd\u001f\"W\u001b\ufffd\ufffd\u0003\ufffd\fmz_\t\ufffd\ufffd\r\u03c3P5\ufffd\ufffdL\ufffd\ufffd\ufffd\ufffd3\ufffd\ufffd\ufffdb\ufffd\ufffdI\ufffd\ufffd\ufffdq\ufffd1,\u0016\b\r\ufffdz\ufffd\u00130l\u0017jv\ufffde\ufffdAm0n\ufffdx\r\ufffdM\u001f\ufffd\ufffdh\ufffd\ufffdh8\ufffd|\ufffd\u0019\u001c\u0007\b.\ufffd\ufffd\u0010Ddp\u001f\ufffdX\f7\ufffdQ\n\ufffd\ufffd\u001ao\ufffd\u000f\u0005\ufffd\ufffd\ufffd`\u0003i\ufffd\ng`\ufffd\ufffd\ufffd\tc\ufffd\r\ufffd\u0000\ufffd\ufffd\u0690\u0011V\ufffd\u001a\ufffd\u0002\ufffd:C^h\\dH\r\ufffd+\f\ufffd\ufffd}\ufffd\ufffd`\u0000\ufffdk\ufffd\u0019\ufffd$\u001a\ufffd\u0006AY\ufffd\ufffdaV\ufffd\ufffdx \u0017o\ufffd\u001f*\u0006\u001b \ufffd\ufffdH\u0003j\ufffd\u001bf\u0000\u000e\ufffdc\f\ufffd!{\ufffd\u0001^\u0014\ufffd50\ufffd\u001d\ufffd\f$\ufffd\r\ufffd\ufffd\ufffdt\ufffd4P\u0015g<\u0006\ufffd\ufffd\u03f1\ufffd\ufffd\ufffdtf\ufffd,a\u001d\u0018h\ufffddV\u0003s\u0019\ufffdd /\ufffd\ufffd\r\ufffd\ufffd\u010dA\ufffdX\ufffd2\ufffd\ufffdC?\rB\u0005\u05f9A\ufffd\ufffd;\ufffd\ufffd\ufffd\r\ufffdmoq\ufffd`\ufffd\u0001E\u0017\ufffd\ufffd\ufffd\b,\ufffd\u0000\u0000\u0000\u0000IEND\ufffdB`\ufffd"
+        }
+      ]
+    },
+    "read_media_file": {
+      "raised": true,
+      "error": "AttributeError: 'ImageContent' object has no attribute 'mimeType'"
+    },
+    "_verdict": {
+      "read_text_file_refused": false,
+      "markers_found": [
+        "IDAT",
+        "IEND",
+        "IHDR",
+        "PNG",
+        "\ufffd"
+      ],
+      "returned_chars": 370,
+      "sample_repr": "'\ufffdPNG\\r\\n\\x1a\\n\\x00\\x00\\x00\\rIHDR\\x00\\x00\\x00@\\x00\\x00\\x00@\\x08\\x02\\x00\\x00\\x00%\\x0b\ufffd\\x00\\x00\\x01FIDATx\ufffd\ufffd\ufffd\ufffd\\x0e\ufffd \\x0c\\x03P\ufffd\ufffd\ufffd\u066d\ufffd\\x18\ufffd\\x10\ufffd\u0616zYoO]\\x0b8n\ufffd\ufffd\ufffd\ufffd\ufffd\\x1f\"W\\x1b\ufffd\ufffd\\x03\ufffd\\x0cmz_\\t\ufffd\ufffd\\r\u03c3P5\ufffd\ufffdL\ufffd\ufffd\ufffd\ufffd3\ufffd\ufffd\ufffdb\ufffd\ufffdI\ufffd\ufffd\ufffdq\ufffd1,\\x16\\x08\\r\ufffdz\ufffd\\x130l\\x17jv\ufffde\ufffdAm0n\ufffdx\\r\ufffdM\\x1f\ufffd\ufffdh\ufffd\ufffdh8\ufffd|\ufffd\\x19\\x1c\\x07\\x08.\ufffd\ufffd\\x10Ddp\\x1f\ufffdX\\x0c7\ufffdQ\\n\ufffd\ufffd\\x1ao\ufffd\\x0f\\x05\ufffd\ufffd\ufffd`\\x03i\ufffd\\ng`\ufffd\ufffd\ufffd\\tc\ufffd\\r\ufffd\\x00\ufffd\ufffd\u0690\\x11V\ufffd\\x1a\ufffd\\x02\ufffd:C^h\\\\dH\\r\ufffd+\\x0c\ufffd\ufffd}\ufffd'"
+    }
+  },
+  "pipeline": {
+    "trace_file": "D:\\MCP_PROJECT\\docs\\phase4_runs\\pipeline_check.trace",
+    "steps_parsed": 3,
+    "tool_names_parsed": [
+      "read_text_file",
+      "read_media_file"
+    ],
+    "expects_read_media_file": {
+      "score": 1.0,
+      "passed": true,
+      "details": "Correctly called 1 of 1 expected tools."
+    },
+    "expects_only_a_tool_never_called": {
+      "score": 0.0,
+      "passed": false,
+      "details": "Correctly called 0 of 1 expected tools."
+    },
+    "harness_findings": []
+  }
+}
