@@ -15,6 +15,11 @@ jobs:
     permissions:
       # Required for PyPI Trusted Publishing (OIDC). No API token is stored in
       # this repository, and none needs to be.
+      # Note: PyPI Trusted Publisher must be added on pypi.org (not test.pypi.org):
+      #   - Owner: yash161004
+      #   - Repository name: mcplock
+      #   - Workflow name: publish.yml
+      #   - Environment name: pypi
       id-token: write
       contents: read
     steps:
