@@ -38,43 +38,52 @@ items. What follows is what actually remains.
 
 Agents can prepare these but must not perform them.
 
-### 1.1 Register the PyPI Trusted Publisher — the last open item
+### 1.1 PyPI Trusted Publishing — RESOLVED 2026-07-29
 
-1.0.0 and 1.0.1 reached PyPI by manual `twine upload`. 1.0.2 published from CI,
-but **with an API token, so it has no PEP 740 provenance attestations.** Every
-tag-triggered OIDC attempt before that failed at the upload step:
-
-```
-* `invalid-publisher`: valid token, but no corresponding publisher
-  (Publisher with matching claims was not found)
-```
-
-Everything before the upload passes — tag-vs-version guard, build, sdist leak
-check. This is a PyPI configuration mismatch, not a code problem.
-
-**Use the link PyPI generated during run `30440005820`**, logged in as an owner
-of the package:
-
-<https://pypi.org/manage/project/mcplock/settings/publishing/?provider=github&owner=yash161004&repository=mcplock&workflow_filename=publish.yml>
-
-It prefills owner, repository, and workflow filename — but **not** the
-environment, and that is the field most likely to have been wrong. PyPI's
-troubleshooting guide lists it explicitly: *"check if the workflow is using the
-same environment as configured when the publisher was configured on PyPI."*
+Registered and verified. Do not reopen.
 
 | Field | Value |
 |---|---|
 | Owner | `yash161004` |
 | Repository name | `mcplock` |
 | Workflow name | `publish.yml` |
-| **Environment name** | **`pypi`** ← must be filled in by hand |
+| Environment name | `pypi` |
 
-Register on **pypi.org**, not test.pypi.org — that mismatch produces this exact
-symptom indefinitely.
+**The environment field was the cause.** Four tag-triggered attempts had failed
+with `invalid-publisher`; PyPI's troubleshooting guide lists an environment
+mismatch as a cause, and the registration link PyPI generates does not prefill
+that field. Registering it as `pypi`, matching the job's `environment: name:`,
+fixed it.
 
-**After it works, delete the `PYPI_API_TOKEN` secret.** It is a standing
-credential; OIDC mints a short-lived one per run and is the only path that
-produces attestations.
+Verified without publishing anything, by re-running the old `v1.0.0` publish
+(run `30425739738`, attempt 2). That revision of the workflow had no `password:`
+input, so it was pure OIDC, against a version PyPI already holds:
+
+```
+##[notice]Generating and uploading digital attestations
+  -> mcplock-1.0.0-py3-none-any.whl.publish.attestation
+  -> mcplock-1.0.0.tar.gz.publish.attestation
+Uploading distributions to https://upload.pypi.org/legacy/
+400 File already exists ('mcplock-1.0.0-py3-none-any.whl', ...)
+```
+
+`File already exists` rather than `invalid-publisher` proves the OIDC exchange
+succeeded, and the attestations were generated — they only exist on the Trusted
+Publishing path. This is a safe test to repeat: a duplicate version is hard
+rejected, so it cannot publish.
+
+The `PYPI_API_TOKEN` secret was **deleted** on 2026-07-29 once this was proven.
+No secrets remain on the repository.
+
+History, for anyone auditing the releases:
+
+| Version | How it published | Attestations |
+|---|---|---|
+| 0.1.0, 1.0.0, 1.0.1 | manual `twine upload` | no |
+| 1.0.2 | CI, API token | **no** — the token silently disabled them |
+| 1.0.3 onward | CI, OIDC | yes |
+
+1.0.2 cannot be fixed retroactively; PyPI forbids re-uploading a version.
 
 ### 1.1a How the two paths are selected
 
