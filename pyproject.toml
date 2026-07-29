@@ -41,6 +41,25 @@ mcplock = "mcplock.cli:app"
 [tool.hatch.build.targets.wheel]
 packages = ["mcplock"]
 
+# The sdist ships to PyPI alongside the wheel and is world-readable forever —
+# yanking a release does not delete its files. Hatchling's default is to sweep
+# the working tree, which pulled in `docs/INTERNAL_FINDINGS.md` (undisclosed
+# third-party findings), `docs/disclosure_drafts/` (unsent private reports),
+# `CLAUDE.md`, and a stale `.claude/worktrees/` copy. Publishing any of those
+# would breach docs/DISCLOSURE.md irreversibly.
+#
+# This list is an allowlist on purpose. Adding a path here publishes it. Do not
+# replace it with an `exclude` list — a new sensitive file would then ship by
+# default, which is the failure mode this exists to prevent.
+[tool.hatch.build.targets.sdist]
+only-include = [
+    "mcplock",
+    "tests",
+    "README.md",
+    "LICENSE",
+    "pyproject.toml",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
