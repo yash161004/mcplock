@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mcplock"
-version = "0.1.0"
+version = "0.1.1"
 description = "Pin, diff, and lint MCP tool definitions — npm audit / SRI for MCP tools."
 readme = "README.md"
 requires-python = ">=3.11"
