@@ -1,10 +1,27 @@
-# External repo validation plan — §3.5
+# External repo validation — §3.5
 
-**Prerequisite:** mcplock 0.1.1 must be published on PyPI before the
-Action can resolve `mcplock` (the default value of `mcplock-version`)
-without a git URL.
+**Status: EXECUTED, 2026-07-29.** The demo repo exists and both runs are
+recorded. What follows is the plan as carried out, kept because it documents
+how to reproduce the setup.
 
-## Once 0.1.1 is live
+| Run | Result | Link |
+|---|---|---|
+| Baseline captured and verified clean | success | [`30425018340`](https://github.com/yash161004/mcplock-demo/actions/runs/30425018340) |
+| Injected description drift | **failure at HIGH severity** | [`30425300912`](https://github.com/yash161004/mcplock-demo/actions/runs/30425300912) |
+
+Repo: [yash161004/mcplock-demo](https://github.com/yash161004/mcplock-demo)
+(public, zero credentials — targets `@modelcontextprotocol/server-filesystem`).
+Both runs are linked from the mcplock README.
+
+One deviation from the plan below: the drift injection lives in a committed
+script rather than an inline workflow step, because the inline heredoc could not
+navigate the snapshot dict structure correctly.
+
+**Prerequisite (satisfied):** mcplock had to be published on PyPI before the
+Action could resolve `mcplock` (the default value of `mcplock-version`) without
+a git URL. PyPI now serves 1.0.1.
+
+## The plan as executed
 
 ### Create a minimal public repo
 
@@ -68,6 +85,5 @@ README showing the green run and a screenshot of the failing run.
 
 ---
 
-**This file is a plan, not a completed deliverable.** Execute it after
-0.1.1 is on PyPI and `pip install mcplock` resolves without a git URL.
-The demo repo can be created any time; the first CI run must wait.
+Both steps above were run and both links are live. This satisfies the brief's
+§6 success metric: the Action works in a repository that is not this one.

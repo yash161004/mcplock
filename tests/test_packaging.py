@@ -82,6 +82,21 @@ def test_the_package_itself_is_shipped(config: dict) -> None:
     assert any(entry.strip("/") == "mcplock" for entry in allowed)
 
 
+def test_dunder_version_matches_pyproject(config: dict) -> None:
+    """`mcplock.__version__` is the only version a consumer can read at runtime.
+
+    It drifted once already: 1.0.1 shipped to PyPI still reporting "0.1.0",
+    because nothing tied the two together. The publish workflow guards the tag
+    against pyproject; this guards pyproject against the package.
+    """
+    import mcplock
+
+    assert mcplock.__version__ == config["project"]["version"], (
+        f"mcplock.__version__ is {mcplock.__version__!r} but pyproject.toml "
+        f"declares {config['project']['version']!r}. Bump both together."
+    )
+
+
 def test_license_file_exists_when_license_is_declared(config: dict) -> None:
     """Metadata claims MIT; a published package should carry the text."""
     declared = config["project"].get("license")

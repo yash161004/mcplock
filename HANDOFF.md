@@ -19,11 +19,11 @@ code safely; ask the owner for `AGENT_BRIEF.md` if you need the full rationale.
 | 3 — ambiguity + scope lint / `lint` | done (`af07fa2`) |
 | 4 — real-server sweep | done (11/12 reached; all six findings verified, only F-001 real) |
 | 4 — LLM hypothesis test | **stopped, deliberately** — [docs/PHASE4_RESULTS.md](docs/PHASE4_RESULTS.md) |
-| 5 — report polish + GitHub Action | done |
-| 6 — ship | in progress — see REMAINING_WORK.md |
+| 5 — report polish + GitHub Action | done (incl. the PR-comment step) |
+| 6 — ship | done in substance — mcplock 1.0.1 is on PyPI; only owner decisions remain |
 
 146 tests pass: `.venv/Scripts/python -m pytest tests -q` (~90s; the `e2e` ones
-spawn real MCP servers over stdio).
+spawn real MCP servers over stdio). CI is green on master for 3.11/3.12/3.13.
 
 ## The one hard constraint
 
@@ -53,11 +53,13 @@ remaining three are real-but-not-worth-reporting. Verdicts and reasoning are in
 ## Next work
 
 See **[REMAINING_WORK.md](REMAINING_WORK.md)** — the single task list, covering
-mcplock, fixtura and OpenEval, with hard constraints and a recommended order.
+mcplock, fixtura and OpenEval, with hard constraints.
 
-The blocking one: PyPI Trusted Publishing is unconfigured, so the `v0.1.1` tag
-built and failed with `invalid-publisher` and PyPI still serves 0.1.0. Owner
-action; the exact fields to register are in T1.
+Nothing there is agent-blocking any more. mcplock 1.0.1 and fixtura 2.0.0 are
+both published, and every Phase 6 engineering item is closed. What is left is
+owner decisions: whether to send the one surviving disclosure draft, whether to
+publish the writeup, and fixing PyPI Trusted Publishing (still unconfigured —
+releases have gone out by manual `twine upload`).
 
 ## Traps
 
