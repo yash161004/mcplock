@@ -78,10 +78,13 @@ regression, even though each looks like a cleanup.
   unrelated abandoned stub that installs cleanly and does nothing. `0.1.2`
   resolves but lacks the adapter module — `pip install --dry-run` cannot catch
   that, because it resolves without importing.
-- **`import fixtura` does not work** — the distribution installs top-level `cli`,
-  `recorder`, `replay`, `security`, `tools` instead. Use `from recorder.recorder
-  import ExecutionRecorder`. That is not a workaround; see H-001 in
-  PHASE4_RESULTS.md, which is a finding to report upstream.
+- **`import fixtura` does not work on fixtura 1.x** — it installs top-level
+  `cli`, `recorder`, `replay`, `security`, `tools` instead, so the scripts use
+  `from recorder.recorder import ExecutionRecorder`. That is not a workaround;
+  see H-001 in PHASE4_RESULTS.md. **fixtura 2.0.0 fixed it** by moving everything
+  under the `fixtura.` namespace, which is why `validate` pins `<2` — the two
+  scripts still use the old imports. Read the comment in `pyproject.toml` before
+  lifting the cap.
 - **`--env` values are secrets.** `ServerTarget.__repr__` is hand-written to
   redact them and the malformed-`--env` error reports by position only. Both
   were live credential leaks. `tests/test_connector.py` guards them.
