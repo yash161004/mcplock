@@ -1,9 +1,13 @@
 # Handoff
 
 Written for a fresh agent (Antigravity, OpenCode, or a new Claude Code session)
-picking this repo up cold. Read [CLAUDE.md](CLAUDE.md) first — especially
-**"Deviations from this brief (decided, do not fix back)"**, which lists choices
-that look wrong against the original spec and are not.
+picking this repo up cold.
+
+`CLAUDE.md` holds the original brief plus **"Deviations from this brief (decided,
+do not fix back)"** — the choices that look wrong against the spec and are not.
+It is **kept local and is not in this repository**, so it will be absent from a
+fresh clone. The Traps section below carries the parts that matter for changing
+code safely; ask the owner for `CLAUDE.md` if you need the full rationale.
 
 ## State
 
@@ -50,10 +54,10 @@ Blocked on owner decisions more than on code. In rough order:
 2. **None of them are upstream-verified.** See the re-observation caveat below.
    Criterion 1 of each finding ("check the current upstream source, not this
    fixture") is still unmet for all six.
-3. Publish to PyPI so the Action's default `pip install mcplock` resolves. Until
-   then callers must pass a git URL — the input description says so.
-4. Work the pre-publish checklist at the end of [CLAUDE.md](CLAUDE.md), starting
-   with removing `docs/INTERNAL_FINDINGS.md`.
+3. Publish to PyPI so the Action's default `pip install mcplock` resolves. The
+   artifacts are built and verified; only the upload is outstanding.
+4. Work the pre-publish checklist at the end of the local `CLAUDE.md`. Items 1
+   and 2 are done — the findings and `CLAUDE.md` itself are out of the repo.
 
 Still unbuilt from the brief's Phase 5: the Action does **not** post a PR
 comment summarising lint findings. `check` in CI works; the comment step does not
@@ -83,8 +87,10 @@ regression, even though each looks like a cleanup.
   were live credential leaks. `tests/test_connector.py` guards them.
 - **mcp SDK is 2.x.** `streamable_http_client` (2 values, not 3),
   `next_cursor` not `nextCursor`, `MCPServer` not `FastMCP`.
-- **Don't publish `docs/INTERNAL_FINDINGS.md`.** It holds undisclosed
-  third-party findings. See the pre-publish checklist at the end of CLAUDE.md.
+- **Never track anything under `.private/`.** It holds undisclosed third-party
+  findings and the unsent disclosure drafts. This repository is public: adding
+  any of it back breaches `docs/DISCLOSURE.md` the moment it is pushed. The same
+  goes for `CLAUDE.md`, which is deliberately untracked.
 - **Never interpolate `${{ ... }}` inside a `run:` block** in the Action. GitHub
   substitutes the raw text before bash parses it, so a crafted `server` or `env`
   input executes on the runner — quoting does not help. Pass caller input through
