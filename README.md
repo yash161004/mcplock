@@ -118,6 +118,12 @@ jobs:
           fail-on: 'high'
 ```
 
+### Demo
+
+A real CI run against `@modelcontextprotocol/server-filesystem`:
+- [✓ Green run](https://github.com/yash161004/mcplock-demo/actions/runs/30425018340) — baseline captured and verified clean
+- [✗ Broken run](https://github.com/yash161004/mcplock-demo/actions/runs/30425300912) — injected description drift detected at HIGH severity, build fails
+
 ### Action Inputs
 
 | Input | Description | Default |
