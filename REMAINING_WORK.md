@@ -72,8 +72,11 @@ succeeded, and the attestations were generated — they only exist on the Truste
 Publishing path. This is a safe test to repeat: a duplicate version is hard
 rejected, so it cannot publish.
 
-The `PYPI_API_TOKEN` secret was **deleted** on 2026-07-29 once this was proven.
-No secrets remain on the repository.
+The `PYPI_API_TOKEN` secret was **deleted** on 2026-07-29 once this was proven,
+and the token itself **revoked on PyPI** the same day. Deleting the GitHub
+secret alone would not have invalidated it — the token stays live on the PyPI
+account until explicitly removed. No secrets remain on the repository, and no
+long-lived PyPI credential exists for this project.
 
 History, for anyone auditing the releases:
 
