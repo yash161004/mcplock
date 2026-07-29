@@ -8,3 +8,5 @@ build/
 report.json
 .mcplock/
 sandbox/phase4/
+.claude/
+dist/
