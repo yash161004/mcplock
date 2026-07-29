@@ -25,7 +25,10 @@ from mcplock.connector import ServerTarget, fetch_tools  # noqa: E402
 from mcplock.lint.ambiguity import find_ambiguities  # noqa: E402
 from mcplock.lint.scope import find_scope_issues, states_scope  # noqa: E402
 
-OUT = REPO / "docs" / "phase4_runs"
+# Output goes to the gitignored .private/, never docs/. This sweep pairs named
+# third-party servers with asserted findings; docs/ is published, and writing
+# there would breach docs/DISCLOSURE.md the moment the result was committed.
+OUT = REPO / ".private"
 SANDBOX = REPO / "sandbox" / "phase4"
 
 # Public servers reachable with no credentials. Official reference servers

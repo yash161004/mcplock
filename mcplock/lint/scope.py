@@ -33,11 +33,25 @@ from typing import Any
 from ..normalize import scannable_text, word_tokens
 
 # Verbs implying an action with consequences beyond returning data.
+#
+# `drop`, `upload`, and `transfer` were removed after they fired on the real
+# Playwright server: "drop" there is the drag-and-drop gesture, not deletion.
+# A verb whose destructive reading depends on its object belongs in
+# CONTEXTUAL_VERBS, and moving data is not the same as destroying it.
 DESTRUCTIVE_VERBS = frozenset(
-    """delete remove destroy drop purge truncate erase wipe overwrite write
+    """delete remove destroy purge truncate erase wipe overwrite write
     modify update rename move execute run spawn invoke send post publish
-    upload transfer grant revoke kill terminate""".split()
+    grant revoke kill terminate""".split()
 )
+
+# Verbs that are only destructive next to the right object. `drop a table` is;
+# `drop a file onto the page` is not. Requiring the object keeps the SQL sense
+# without matching browser gestures.
+CONTEXTUAL_VERBS = {
+    "drop": frozenset({"table", "tables", "database", "databases", "schema",
+                       "collection", "collections", "index", "indexes", "column"}),
+    "flush": frozenset({"cache", "caches", "buffer", "table", "database"}),
+}
 
 # Language that explicitly widens scope rather than narrowing it.
 UNBOUNDED_MARKERS = frozenset(
@@ -48,6 +62,15 @@ UNBOUNDED_MARKERS = frozenset(
 # Phrases that state a boundary. Deliberately broad: a false "this tool is
 # scoped" is a missed finding, but a false "unscoped" is noise that gets the
 # linter ignored, and noise is the failure mode that matters here.
+# Named subsystems that constitute a boundary when a tool says it acts on one.
+# Deliberately excludes generic objects — "the host", "the system", "the machine"
+# name no boundary at all, and must keep failing this check.
+_SUBSYSTEM = (
+    r"(?:graph|database|repository|repo|workspace|project|page|browser|session|"
+    r"directory|directories|folder|index|store|collection|namespace|container|"
+    r"bucket|notebook|document|sheet|channel|queue)\b"
+)
+
 SCOPE_PATTERNS = (
     r"\bonly\s+works?\s+(?:with)?in\b",
     r"\b(?:with)?in\s+(?:the\s+)?(?:allowed|permitted|configured|specified|given|current)\b",
@@ -61,6 +84,20 @@ SCOPE_PATTERNS = (
     r"\bsandbox",
     r"\bworkspace\b",
     r"\bwithin\s+the\b",
+    # A named subsystem is a boundary statement too. "from the knowledge graph"
+    # and "on the SQLite database" say where the tool acts just as precisely as
+    # "within allowed directories" does — the earlier pattern list only knew how
+    # to recognise filesystem phrasing, and flagged in-memory and browser servers
+    # for omitting a sentence they had no reason to write.
+    #
+    # Deliberately requires a *named* subsystem. Generic objects ("on the host",
+    # "in the system") state no boundary and must keep failing this check.
+    r"\b(?:from|on|in|to|within|inside|against)\s+(?:the|this|its|your)\s+"
+    r"(?:\w+[\s-]+){0,2}" + _SUBSYSTEM,
+    # …or as a direct object: "Read the entire knowledge graph" bounds itself
+    # just as well as "read from the knowledge graph", and requiring the
+    # preposition flagged the one memory tool phrased the other way.
+    r"\bthe\s+(?:\w+[\s-]+){0,2}" + _SUBSYSTEM,
 )
 
 _SCOPE_RE = re.compile("|".join(SCOPE_PATTERNS), re.IGNORECASE)
@@ -68,6 +105,13 @@ _SCOPE_RE = re.compile("|".join(SCOPE_PATTERNS), re.IGNORECASE)
 # Fraction of a server's tools that must state a boundary before a tool that
 # omits one is treated as departing from a convention rather than as normal.
 CONVENTION_MAJORITY = 0.6
+
+# A "convention" inferred from a handful of tools is noise: on a three-tool
+# server, two agreeing is 67% and indicts the third. Only one convention
+# departure survived verification across 85 real tools — `read_file` on the
+# 14-tool filesystem server — so requiring a reasonable sample costs nothing
+# real and removes the small-server false positives.
+MIN_TOOLS_FOR_CONVENTION = 8
 
 
 @dataclass(frozen=True)
@@ -111,13 +155,31 @@ def _verbs_in(tool: dict[str, Any]) -> set[str]:
     return tokens
 
 
+def destructive_verbs_in(tool: dict[str, Any]) -> list[str]:
+    """Destructive verbs this tool uses, resolving ambiguous ones by object.
+
+    A contextual verb counts only when a qualifying object appears somewhere in
+    the same text: ``drop the users table`` is destructive, ``drop a file onto
+    the page`` is not. Without this, the browser drag-and-drop tools read as
+    deletions.
+    """
+    tokens = _verbs_in(tool)
+    found = set(tokens & DESTRUCTIVE_VERBS)
+
+    for verb, objects in CONTEXTUAL_VERBS.items():
+        if verb in tokens and tokens & objects:
+            found.add(verb)
+
+    return sorted(found)
+
+
 def find_scope_issues(tools: list[dict[str, Any]]) -> list[ScopeFinding]:
     """Flag tools whose descriptions do not bound what they act on."""
     findings: list[ScopeFinding] = []
 
     scoped = [states_scope(t.get("description")) for t in tools]
     scoped_share = (sum(scoped) / len(tools)) if tools else 0.0
-    convention = scoped_share >= CONVENTION_MAJORITY
+    convention = len(tools) >= MIN_TOOLS_FOR_CONVENTION and scoped_share >= CONVENTION_MAJORITY
 
     for tool, has_scope in zip(tools, scoped, strict=True):
         name = tool.get("name", "")
@@ -126,7 +188,7 @@ def find_scope_issues(tools: list[dict[str, Any]]) -> list[ScopeFinding]:
             continue
 
         tokens = _verbs_in(tool)
-        destructive = sorted(tokens & DESTRUCTIVE_VERBS)
+        destructive = destructive_verbs_in(tool)
         unbounded = sorted(tokens & UNBOUNDED_MARKERS)
 
         if destructive:
