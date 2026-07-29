@@ -38,51 +38,69 @@ items. What follows is what actually remains.
 
 Agents can prepare these but must not perform them.
 
-### 1.1 PyPI Trusted Publishing is still not configured
+### 1.1 Register the PyPI Trusted Publisher — the last open item
 
-mcplock 1.0.0 and 1.0.1 reached PyPI by manual `twine upload`. The tag-triggered
-workflow still fails at the upload step:
+1.0.0 and 1.0.1 reached PyPI by manual `twine upload`. 1.0.2 published from CI,
+but **with an API token, so it has no PEP 740 provenance attestations.** Every
+tag-triggered OIDC attempt before that failed at the upload step:
 
 ```
 * `invalid-publisher`: valid token, but no corresponding publisher
   (Publisher with matching claims was not found)
 ```
 
-Last failure: run `30425739738` on tag `v1.0.0`. Everything before the upload
-passes — tag-vs-version guard, build, sdist leak check. This is purely a PyPI
-configuration mismatch, not a code problem.
+Everything before the upload passes — tag-vs-version guard, build, sdist leak
+check. This is a PyPI configuration mismatch, not a code problem.
 
-Claims GitHub sends, for registration on **pypi.org** (not test.pypi.org — that
-mismatch produces exactly this symptom indefinitely):
+**Use the link PyPI generated during run `30440005820`**, logged in as an owner
+of the package:
 
-| Claim | Value |
+<https://pypi.org/manage/project/mcplock/settings/publishing/?provider=github&owner=yash161004&repository=mcplock&workflow_filename=publish.yml>
+
+It prefills owner, repository, and workflow filename — but **not** the
+environment, and that is the field most likely to have been wrong. PyPI's
+troubleshooting guide lists it explicitly: *"check if the workflow is using the
+same environment as configured when the publisher was configured on PyPI."*
+
+| Field | Value |
 |---|---|
-| `repository` | `yash161004/mcplock` |
-| `repository_owner` | `yash161004` |
+| Owner | `yash161004` |
+| Repository name | `mcplock` |
 | Workflow name | `publish.yml` |
-| `environment` | `pypi` |
+| **Environment name** | **`pypi`** ← must be filled in by hand |
 
-Already ruled out: pending-vs-project publisher, the workflow-name field, the
-environment name.
+Register on **pypi.org**, not test.pypi.org — that mismatch produces this exact
+symptom indefinitely.
 
-**Fallback is already wired.** `.github/workflows/publish.yml` passes
-`password: ${{ secrets.PYPI_API_TOKEN }}` to the publish step. The only step
-left is the owner creating that secret (GitHub → Settings → Secrets and
-variables → Actions → `PYPI_API_TOKEN`). No workflow edit is needed to switch
-paths in either direction:
+**After it works, delete the `PYPI_API_TOKEN` secret.** It is a standing
+credential; OIDC mints a short-lived one per run and is the only path that
+produces attestations.
 
-- Secret absent → interpolates to an empty string → the action's
-  `[[ "$INPUT_USER" == "__token__" && -z "$INPUT_PASSWORD" ]]` test holds → it
-  attempts Trusted Publishing, exactly as before.
-- Secret present → it uploads with the token.
+### 1.1a How the two paths are selected
 
-Deleting the secret reverts to OIDC. The workflow also prints which path it is
-taking before uploading (presence only, never the value) — the earlier releases
-failed and were retried blind because the log never said.
+`gh-action-pypi-publish` picks with:
 
-**Prefer fixing Trusted Publishing over keeping the token.** A long-lived PyPI
-token in repository secrets is a standing credential; OIDC mints a short-lived
-one per run. The token is a workaround, not the destination.
+```bash
+[[ "${INPUT_USER}" == "__token__" && -z "${INPUT_PASSWORD}" ]] \
+    && TRUSTED_PUBLISHING=true || TRUSTED_PUBLISHING=false
+```
+
+so an empty `password` means OIDC. The workflow gates the token behind a
+repository **variable**, not the mere presence of the secret:
+
+```yaml
+password: ${{ vars.USE_PYPI_TOKEN == 'true' && secrets.PYPI_API_TOKEN || '' }}
+```
+
+- Default (variable unset) → OIDC, with attestations.
+- `USE_PYPI_TOKEN=true` **and** the secret present → token, and the run logs a
+  `::warning::` that attestations are disabled.
+- `USE_PYPI_TOKEN=true` but no secret → falls through to OIDC.
+
+This exists because 1.0.2 lost its provenance silently: the secret alone was
+enough to divert to the token path, and the action only mentions it in a passing
+warning. For a supply-chain tool, that is the wrong default. Giving up
+provenance now takes a deliberate act.
 
 **Agents must never handle a PyPI token directly.**
 

@@ -65,34 +65,55 @@ jobs:
           PY
 
       - name: Report which credential path will be used
-        # Four earlier releases failed at the upload step with `invalid-publisher`
-        # and were retried blind, because the log never said which path was taken.
+        # Earlier releases failed at the upload step with `invalid-publisher` and
+        # were retried blind, because the log never said which path was taken.
         # This prints that up front. It reports presence only — never the value.
         env:
+          USE_PYPI_TOKEN: ${{ vars.USE_PYPI_TOKEN }}
           PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         run: |
-          if [ -n "$PYPI_API_TOKEN" ]; then
-            echo "PYPI_API_TOKEN is set -> uploading with an API token."
+          if [ "$USE_PYPI_TOKEN" = "true" ]; then
+            if [ -n "$PYPI_API_TOKEN" ]; then
+              echo "::warning::Publishing with an API token. PEP 740 attestations"
+              echo "::warning::are DISABLED on this release — the action ignores"
+              echo "::warning::them whenever an explicit password is set."
+              echo "vars.USE_PYPI_TOKEN=true and the secret is present"
+              echo "  -> uploading with an API token, WITHOUT attestations."
+            else
+              echo "vars.USE_PYPI_TOKEN=true but PYPI_API_TOKEN is empty or unset"
+              echo "  -> falling through to Trusted Publishing (OIDC)."
+            fi
           else
-            echo "PYPI_API_TOKEN is not set -> attempting Trusted Publishing (OIDC)."
-            echo "If this fails with 'invalid-publisher', the publisher is not"
-            echo "registered on pypi.org with the claims listed in this workflow."
+            echo "-> attempting Trusted Publishing (OIDC), with attestations."
+            echo "If this fails with 'invalid-publisher', the publisher on"
+            echo "pypi.org does not match the claims below. The field most often"
+            echo "missed is the environment name, which must be 'pypi':"
+            echo "  owner=${GITHUB_REPOSITORY_OWNER} repo=${GITHUB_REPOSITORY}"
+            echo "  workflow=publish.yml environment=pypi"
+            echo "Break glass: set repository variable USE_PYPI_TOKEN=true."
           fi
 
       - name: Publish package
-        # `password` is a fallback, not a replacement. gh-action-pypi-publish
-        # selects its auth path with:
+        # Trusted Publishing (OIDC) is the default path, and the only one that
+        # produces PEP 740 attestations. gh-action-pypi-publish chooses with:
         #
         #   [[ "${INPUT_USER}" == "__token__" && -z "${INPUT_PASSWORD}" ]] \
         #       && TRUSTED_PUBLISHING=true || TRUSTED_PUBLISHING=false
         #
-        # An unset secret interpolates to an empty string, so `-z` holds and OIDC
-        # is attempted exactly as before. Creating the secret switches to the
-        # token; deleting it switches back. Neither needs a workflow edit.
+        # so an empty `password` means OIDC.
         #
-        # Prefer fixing Trusted Publishing over keeping the token: a long-lived
-        # PyPI token in repository secrets is a standing credential, while OIDC
-        # mints a short-lived one per run.
+        # The token is gated behind an explicit repository *variable*, not merely
+        # the presence of the secret. 1.0.2 shipped without provenance because
+        # the secret alone was enough to divert to the token path, and the action
+        # only whispers about it in a warning:
+        #
+        #   "The workflow was run with the 'attestations: true' input, but an
+        #    explicit password was also set, disabling Trusted Publishing."
+        #
+        # For a supply-chain tool, losing provenance silently is the wrong
+        # default. Now it takes a deliberate `USE_PYPI_TOKEN=true` to give it up,
+        # and the step above says so loudly when that happens.
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
+          password: ${{ vars.USE_PYPI_TOKEN == 'true' && secrets.PYPI_API_TOKEN || '' }}
+          attestations: true
