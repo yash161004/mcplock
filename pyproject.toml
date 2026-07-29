@@ -9,6 +9,20 @@ description = "Pin, diff, and lint MCP tool definitions — npm audit / SRI for 
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
+authors = [{ name = "Yashrajsinh Rathod" }]
+keywords = ["mcp", "model-context-protocol", "security", "supply-chain", "agent", "llm"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Software Development :: Quality Assurance",
+]
 dependencies = [
     "mcp>=1.2.0",
     "typer>=0.12.0",
