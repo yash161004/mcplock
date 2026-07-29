@@ -133,7 +133,7 @@ async def run_once(run_index: int, max_turns: int = 6) -> dict[str, Any]:
     import anthropic
     from mcp import ClientSession, StdioServerParameters
     from mcp.client.stdio import stdio_client
-    from recorder.recorder import ExecutionRecorder  # fixtura: see H-001
+    from fixtura.recorder.recorder import ExecutionRecorder  # fixtura 2.x namespace
 
     RUNS_DIR.mkdir(parents=True, exist_ok=True)
     trace_path = RUNS_DIR / f"run{run_index:02d}.trace"

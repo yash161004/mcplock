@@ -91,7 +91,7 @@ def validate_pipeline() -> dict:
     from openeval.adapters.fixtura import from_fixtura_trace
     from openeval.metrics import ToolSelectionAccuracy
     from openeval.models import EvalTestCase
-    from recorder.recorder import ExecutionRecorder
+    from fixtura.recorder.recorder import ExecutionRecorder
 
     RUNS_DIR.mkdir(parents=True, exist_ok=True)
     trace_path = RUNS_DIR / "pipeline_check.trace"

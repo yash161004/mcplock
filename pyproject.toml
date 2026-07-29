@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mcplock"
-version = "1.0.0"
+version = "1.0.1"
 description = "Pin, diff, and lint MCP tool definitions — npm audit / SRI for MCP tools."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -45,21 +45,12 @@ dev = ["pytest>=8.0.0", "pytest-asyncio>=0.23.0"]
 # import, which `pip install --dry-run` cannot catch — it resolves, it never
 # imports. Verify this extra with a real import in a clean venv.
 #
-# fixtura is capped below 2.0.0 on purpose. 2.0.0 moves every package under the
-# `fixtura.` namespace — it previously published `recorder`, `replay`,
-# `security`, `tools`, `cli` and `analysis` as top-level names. The scripts here
-# still import the old layout (`from recorder.recorder import ExecutionRecorder`
-# in scripts/phase4_experiment.py and scripts/phase4_p2_and_pipeline.py), so an
-# uncapped `>=1.0.7` would resolve 2.0.0 and break them at import.
-#
-# The floor is 1.1.1 rather than 1.0.7 because that is the first release where
-# the fixtura/OpenEval pairing is real and CI-verified; 1.0.7's own eval extra is
-# an empty no-op that points at a dead git URL.
-#
-# To move to fixtura 2.x, update those two imports to `fixtura.recorder.recorder`
-# and change this to `fixtura>=2.0.0`.
+# fixtura 2.0.0+ moves every package under the `fixtura.` namespace. Both Phase 4
+# scripts (`scripts/phase4_experiment.py` and `scripts/phase4_p2_and_pipeline.py`)
+# have been updated to `from fixtura.recorder.recorder import ExecutionRecorder`,
+# so mcplock now pins fixtura>=2.0.0.
 validate = [
-    "fixtura>=1.1.1,<2",
+    "fixtura>=2.0.0",
     "openeval-core>=0.2.1",
 ]
 
