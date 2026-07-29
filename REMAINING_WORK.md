@@ -14,8 +14,8 @@ are what they are, and reversing them reintroduces shipped bugs.
 
 | Package | Published on PyPI | Repo HEAD |
 |---|---|---|
-| `mcplock` | **1.0.1** | `1.0.1` — no `v1.0.1` tag (see §2) |
-| `fixtura` | **2.0.0** | current |
+| `mcplock` | **1.0.3** | `1.0.3`, tagged `v1.0.3` |
+| `fixtura` | **2.0.1** | `2.0.1`, tagged `v2.0.1` |
 | `openeval-core` | **0.2.1** | current |
 
 ```bash
@@ -23,9 +23,13 @@ are what they are, and reversing them reintroduces shipped bugs.
 curl -s https://pypi.org/pypi/mcplock/json | python -c "import sys,json;print(json.load(sys.stdin)['info']['version'])"
 ```
 
-Test suite: **146 passing** (`.venv/Scripts/python -m pytest tests -q`, ~90s;
+Test suite: **147 passing** (`.venv/Scripts/python -m pytest tests -q`, ~90s;
 the `e2e` ones spawn real MCP servers over stdio). CI is green on master across
 Python 3.11/3.12/3.13.
+
+Check the exit code, not the tail of the output — `pytest ... | tail -3` reports
+`tail`'s status, so a `&&` chain after it runs even on a red suite. Use
+`${PIPESTATUS[0]}`. This has already caused one push on a failing test.
 
 **The previous revision of this file is obsolete.** Its §1 (publish mcplock
 0.1.1) and §2 (tag fixtura v2.0.0) — described as the blocking critical path —
@@ -84,9 +88,26 @@ History, for anyone auditing the releases:
 |---|---|---|
 | 0.1.0, 1.0.0, 1.0.1 | manual `twine upload` | no |
 | 1.0.2 | CI, API token | **no** — the token silently disabled them |
-| 1.0.3 onward | CI, OIDC | yes |
+| **1.0.3** | **CI, OIDC** | **yes — verified** |
 
-1.0.2 cannot be fixed retroactively; PyPI forbids re-uploading a version.
+1.0.3 was the first release to publish through Trusted Publishing, in run
+`30472686196`. Confirmed rather than assumed: `USE_PYPI_TOKEN` was empty so the
+OIDC branch ran, the log shows `Generating and uploading digital attestations`,
+and PyPI's integrity endpoint returns HTTP 200 for both artifacts:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' \
+  https://pypi.org/integrity/mcplock/1.0.3/mcplock-1.0.3-py3-none-any.whl/provenance
+```
+
+Use that endpoint, not the `provenance` field in `https://pypi.org/pypi/<pkg>/<ver>/json`
+— that field was stale-cached and read `null` for a release that demonstrably
+had attestations, which is misleading in exactly the direction that matters.
+
+Releases from 1.0.3 onward inherit this as long as `USE_PYPI_TOKEN` stays unset.
+1.0.2 and earlier cannot be fixed retroactively; PyPI forbids re-uploading a
+version, and burning a version number to republish identical code is not worth
+it.
 
 ### 1.1a How the two paths are selected
 
@@ -175,7 +196,7 @@ stays in `.private/` until the owner decides. **Do not publish.**
 | Tag fixtura v2.0.0 | Live on PyPI |
 | Disclosure verdicts (F-001..F-006) | Only F-001 real; verified against upstream source. `.private/INTERNAL_FINDINGS.md` |
 | Action PR-comment step | Built — `.github/actions/mcp-lock-action/action.yml`, `comment-on-pr` input, `auto`/`true`/`false` |
-| Test-count doc drift | 146, verified by running the suite |
+| Test-count doc drift | 147, verified by running the suite |
 | External-repo validation | [mcplock-demo](https://github.com/yash161004/mcplock-demo) — one green run, one deliberately-failing run, both linked from README |
 | Registry submission | No MCP registry accepts a scanning *tool* rather than a server. 11 evaluated; conclusion recorded in `.private/REGISTRY_SUBMISSION.md`. Closed rather than forced into a bad fit |
 | fixtura 2.x migration | Both Phase 4 scripts moved to `fixtura.recorder.recorder`; pin lifted to `>=2.0.0` |
