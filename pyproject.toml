@@ -35,6 +35,11 @@ validate = [
     "openeval-core>=0.2.1",
 ]
 
+[project.urls]
+Homepage = "https://github.com/yash161004/mcplock"
+Source = "https://github.com/yash161004/mcplock"
+Issues = "https://github.com/yash161004/mcplock/issues"
+
 [project.scripts]
 mcplock = "mcplock.cli:app"
 

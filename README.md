@@ -96,10 +96,6 @@ concrete drift scenario for them yet.
 
 mcplock provides a reusable composite GitHub Action to gate pull requests against tool-definition drift in CI.
 
-> The Action is referenced from its source repository, which is currently
-> private — `uses:` will not resolve for anyone else until it is made public.
-> The `mcplock` CLI itself works anywhere it is installed.
-
 Add `.github/workflows/mcplock.yml` to your repository:
 
 ```yaml

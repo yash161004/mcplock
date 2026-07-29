@@ -10,3 +10,6 @@ report.json
 sandbox/phase4/
 .claude/
 dist/
+
+# Undisclosed third-party findings — must never be tracked while the repo is public.
+.private/
