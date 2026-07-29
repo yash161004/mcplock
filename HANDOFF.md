@@ -1,7 +1,7 @@
 # Handoff
 
 Written for a fresh agent (Antigravity, OpenCode, or a new Claude Code session)
-picking this repo up cold.
+picking this repo up cold. Remaining work is in [TASKS.md](TASKS.md).
 
 `CLAUDE.md` holds the original brief plus **"Deviations from this brief (decided,
 do not fix back)"** — the choices that look wrong against the spec and are not.
