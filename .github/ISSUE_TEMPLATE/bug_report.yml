@@ -1,0 +1,43 @@
+name: Bug Report
+description: Create a report to help us improve mcplock
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug!
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe what happened...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this issue? Include the mcplock command executed and relevant server target details.
+      placeholder: |
+        1. Run `mcplock snapshot "npx -y ..."`
+        2. Run `mcplock check ...`
+        3. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: false
+  - type: input
+    id: environment
+    attributes:
+      label: Environment Information
+      description: Python version, mcplock version, OS (Windows, macOS, Linux).
+      placeholder: e.g. Python 3.12, mcplock 1.0.3, Ubuntu 22.04
+    validations:
+      required: true

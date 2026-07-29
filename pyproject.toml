@@ -99,3 +99,13 @@ asyncio_mode = "auto"
 markers = [
     "e2e: spawns a real MCP server subprocess and drives the CLI end to end",
 ]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+src = ["mcplock", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "I", "UP"]
+ignore = []
+
