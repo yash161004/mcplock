@@ -144,6 +144,25 @@ pip install -e ".[dev]"
 pytest
 ```
 
+## What it found
+
+mcplock was run against 11 public MCP servers — 85 tools in total. The results,
+including what did *not* hold up, are written up in
+**[the project writeup](https://github.com/yash161004/mcplock/blob/master/docs/WRITEUP.md)**:
+
+- **1 real finding** out of 6 candidates taken to upstream verification, fixed
+  via [PR #4569](https://github.com/modelcontextprotocol/servers/pull/4569)
+- **2 defects in mcplock itself**, found *by* that verification and fixed with
+  regression tests built from real upstream strings — the scope lint went from
+  10 findings to 2, with none false
+- **The brief's proposed ambiguity heuristic does not work.** TF-IDF cosine at
+  85% flags 0 of 91 pairs; what makes it work is gating on schema
+  substitutability first
+
+The writeup also covers a provenance failure in this project's own release
+pipeline, because a tool that detects silent degradation should say when it
+suffered one.
+
 ## Responsible disclosure
 
 mcplock reads tool definitions that servers publish through `tools/list`. When
