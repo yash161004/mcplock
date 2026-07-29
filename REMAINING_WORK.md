@@ -1,8 +1,8 @@
 # Remaining work — mcplock, fixtura, OpenEval
 
-**Written:** 2026-07-29 · For a fresh agent (Antigravity, OpenCode, new Claude Code session) picking this up cold.
+**Written:** 2026-07-29 · For a fresh agent (Antigravity, OpenCode, new agent session) picking this up cold.
 
-Read [HANDOFF.md](HANDOFF.md) and `CLAUDE.md` first — especially *"Deviations from
+Read [HANDOFF.md](HANDOFF.md) and `AGENT_BRIEF.md` first — especially *"Deviations from
 this brief (decided, do not fix back)"*. Also read `openFixturaadapter.md` in the
 fixtura repo: it records why the dependency pins are what they are, and reversing
 them reintroduces shipped bugs.
@@ -150,7 +150,7 @@ interpolation into `run:` blocks. Pass values via `env:` and quote them.
 
 ### 3.3 Pre-publish checklist
 
-Work the checklist at the end of `CLAUDE.md`. Several items are already done
+Work the checklist at the end of `AGENT_BRIEF.md`. Several items are already done
 (LICENSE added, findings untracked, README made standalone for PyPI) — verify
 rather than assume.
 

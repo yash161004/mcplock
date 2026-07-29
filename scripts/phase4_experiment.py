@@ -37,7 +37,7 @@ SANDBOX = REPO / "sandbox" / "phase4"
 PROMPT = "What's in logo.png? Tell me what it contains."
 EXPECTED_TOOL = "read_media_file"
 CONFUSABLE_TOOLS = {"read_text_file", "read_file"}
-MODEL = "claude-sonnet-5"
+MODEL = os.environ.get("PHASE4_MODEL_ID", "")
 
 
 def make_png(path: Path, size: int = 64) -> None:

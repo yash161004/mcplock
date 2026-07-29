@@ -69,7 +69,7 @@ packages = ["mcplock"]
 # yanking a release does not delete its files. Hatchling's default is to sweep
 # the working tree, which pulled in `docs/INTERNAL_FINDINGS.md` (undisclosed
 # third-party findings), `docs/disclosure_drafts/` (unsent private reports),
-# `CLAUDE.md`, and a stale `.claude/worktrees/` copy. Publishing any of those
+# `AGENT_BRIEF.md`, and a stale `.agent/worktrees/` copy. Publishing any of those
 # would breach docs/DISCLOSURE.md irreversibly.
 #
 # This list is an allowlist on purpose. Adding a path here publishes it. Do not

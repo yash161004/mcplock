@@ -39,8 +39,7 @@ refuses and contains the damage) is ruled out.
 ## P1, P3 — NOT RUN
 
 Both need a real LLM-backed agent. The environment has no usable API key:
-`ANTHROPIC_API_KEY` is unset, and `ANTHROPIC_AUTH_TOKEN` (a Claude Code OAuth
-token) is rejected by the Messages API:
+`LLM_API_KEY` is unset, and the API returned an authentication error:
 
 ```
 anthropic.AuthenticationError: Error code: 401 -
@@ -51,7 +50,8 @@ anthropic.AuthenticationError: Error code: 401 -
 The harness is written and the non-LLM path is verified end to end. To finish:
 
 ```bash
-$env:ANTHROPIC_API_KEY = "<key>"
+$env:PHASE4_MODEL_ID = "<model_id>"
+$env:LLM_API_KEY = "<key>"
 python scripts/phase4_experiment.py --runs 5
 ```
 
@@ -75,8 +75,8 @@ Consequences to respect:
   *capable* agent still chooses wrong; a weaker model choosing wrong biases the
   result toward confirmation and proves less.
 - The harness stays in the repo, working. `scripts/phase4_experiment.py --runs 5`
-  finishes it if an `ANTHROPIC_API_KEY` ever exists. The model is pinned to
-  `claude-sonnet-5`; changing it before the first run is fine, after is not.
+  finishes it if an API key ever exists. The model ID is configured via
+  `PHASE4_MODEL_ID`; setting it before the first run is fine, after is not.
 
 ## Harness pipeline — validated (not a result)
 

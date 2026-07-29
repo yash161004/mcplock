@@ -3,8 +3,8 @@
 An sdist is world-readable forever — yanking a release does not delete its
 files, and mirrors cache them. Hatchling's default is to sweep the working tree,
 which once pulled `docs/INTERNAL_FINDINGS.md` (undisclosed third-party
-findings), `docs/disclosure_drafts/` (unsent private reports), `CLAUDE.md`, and
-a stale `.claude/worktrees/` copy into the distribution.
+findings), `docs/disclosure_drafts/` (unsent private reports), `AGENT_BRIEF.md`, and
+a stale `.agent/worktrees/` copy into the distribution.
 
 Publishing any of those would breach `docs/DISCLOSURE.md` irreversibly. These
 tests fail if the allowlist is removed, widened to the sensitive paths, or
@@ -24,9 +24,9 @@ PYPROJECT = REPO / "pyproject.toml"
 # Paths that must never reach a published artifact.
 FORBIDDEN = (
     "docs",
-    "CLAUDE.md",
+    "AGENT_BRIEF.md",
     "HANDOFF.md",
-    ".claude",
+    ".agent",
     "scripts",
     "sandbox",
 )
@@ -47,7 +47,7 @@ def test_sdist_target_is_configured(config: dict) -> None:
 
     assert "sdist" in targets, (
         "pyproject.toml has no [tool.hatch.build.targets.sdist] section. "
-        "Without it the sdist includes docs/, CLAUDE.md, and .claude/ worktrees."
+        "Without it the sdist includes docs/, AGENT_BRIEF.md, and .agent/ worktrees."
     )
 
 

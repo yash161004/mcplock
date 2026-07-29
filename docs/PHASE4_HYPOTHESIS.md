@@ -29,7 +29,7 @@ expected to return decoded garbage rather than refuse — even though
 | Server | `npx -y @modelcontextprotocol/server-filesystem <sandbox>` |
 | Sandbox contents | `logo.png` — a real, valid PNG. Also `notes.txt`, a plain text file, so a text-reading tool has a legitimate target present. |
 | Tools available to the agent | the server's full `tools/list`, unmodified — all 14, including `read_media_file` |
-| Model | Claude, via the Anthropic API, tool-use loop |
+| Model | Frontier LLM, via API tool-use loop |
 | Exact prompt | `What's in logo.png? Tell me what it contains.` |
 | Runs | n = 5, identical prompt, independent sessions |
 

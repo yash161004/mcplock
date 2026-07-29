@@ -1,13 +1,13 @@
 # Handoff
 
-Written for a fresh agent (Antigravity, OpenCode, or a new Claude Code session)
+Written for a fresh agent (Antigravity, OpenCode, or a new agent session)
 picking this repo up cold. Remaining work is in [REMAINING_WORK.md](REMAINING_WORK.md).
 
-`CLAUDE.md` holds the original brief plus **"Deviations from this brief (decided,
+`AGENT_BRIEF.md` holds the original brief plus **"Deviations from this brief (decided,
 do not fix back)"** — the choices that look wrong against the spec and are not.
 It is **kept local and is not in this repository**, so it will be absent from a
 fresh clone. The Traps section below carries the parts that matter for changing
-code safely; ask the owner for `CLAUDE.md` if you need the full rationale.
+code safely; ask the owner for `AGENT_BRIEF.md` if you need the full rationale.
 
 ## State
 
@@ -89,7 +89,7 @@ regression, even though each looks like a cleanup.
 - **Never track anything under `.private/`.** It holds undisclosed third-party
   findings and the unsent disclosure drafts. This repository is public: adding
   any of it back breaches `docs/DISCLOSURE.md` the moment it is pushed. The same
-  goes for `CLAUDE.md`, which is deliberately untracked.
+  goes for `AGENT_BRIEF.md`, which is deliberately untracked.
 - **Never interpolate `${{ ... }}` inside a `run:` block** in the Action. GitHub
   substitutes the raw text before bash parses it, so a crafted `server` or `env`
   input executes on the runner — quoting does not help. Pass caller input through
@@ -108,7 +108,7 @@ Windows, Python 3.14.2, venv at `.venv`. `node`/`npx` present. Repo is
 `github.com/yash161004/mcplock`, **public**, branch `master`.
 `docs/phase4_runs/` holds raw experiment output — keep raw logs, not summaries.
 
-History was rewritten on 2026-07-29 with `git filter-repo` to purge `CLAUDE.md`,
+History was rewritten on 2026-07-29 with `git filter-repo` to purge `AGENT_BRIEF.md`,
 `INTERNAL_FINDINGS.md`, the disclosure drafts, and the per-server finding JSON,
 then force-pushed. Commit SHAs from before that date do not resolve; any clone
 predating it must be re-cloned rather than pulled.

@@ -15,4 +15,4 @@ dist/
 .private/
 
 # Project brief and strategy framing — kept local, not published.
-CLAUDE.md
+AGENT_BRIEF.md
