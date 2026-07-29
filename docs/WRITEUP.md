@@ -225,12 +225,12 @@ result.
   `env:` rather than interpolated into `run:` blocks — the naive version was
   a live script-injection defect, and there is a test guarding against its
   return.
-- **Releases:** Tag-triggered. Trusted Publishing (OIDC) is now configured
-  and verified, so releases from here carry PEP 740 attestations — but
-  **no version currently on PyPI has them**, for the reasons in the supply
-  chain section above. No long-lived credential exists for the project. The
-  workflow refuses to build when the tag and `pyproject.toml` disagree, and
-  refuses to ship an sdist containing undisclosed findings.
+- **Releases:** Tag-triggered, published to PyPI via Trusted Publishing (OIDC)
+  with PEP 740 attestations, from 1.0.3 onward. Earlier versions have no
+  provenance and cannot be given any, for the reasons in the supply chain
+  section above. No long-lived credential exists for the project. The workflow
+  refuses to build when the tag and `pyproject.toml` disagree, and refuses to
+  ship an sdist containing undisclosed findings.
 
 ## Data
 
