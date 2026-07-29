@@ -98,13 +98,15 @@ Confusable Pairs:   [0.42 ──── 0.48]  <-- Flagged
 Distinct Pairs:     [0.00 ── 0.32]    <-- Passed
 ```
 
+*The raw evaluation output across all 91 tool pairs, including TF-IDF cosine scores, schema substitutability decisions, name affinity scores, and veto flags, is published in [`docs/data/filesystem-server-ambiguity-scan.json`](https://github.com/yash161004/mcplock/blob/master/docs/data/filesystem-server-ambiguity-scan.json).*
+
 ---
 
 ## 6. Scope & Limitations
 
-This heuristic evaluates **documentation clarity and schema overlap**, not runtime implementation:
-- A flagged pair indicates that an LLM agent is at risk of selecting the wrong tool or confusing arguments based on the published `tools/list` metadata.
-- It does not inspect underlying source code execution or verify backend server behavior.
+1. **Single-Server Empirical Scope**: This quantitative evaluation covers one specific server (`@modelcontextprotocol/server-filesystem`, 14 tools, 91 pairs). Generalization to other domain-specific MCP servers across different industries or schemas is unproven and subject to further empirical study.
+2. **Heuristic Antonym Vetoes**: The opposing-verb veto (`read`/`write`, `create`/`delete`, `get`/`set`) is an empirical heuristic tailored to common CRUD operations, not an exhaustive semantic rule. It may miss scope-based ambiguity that is not verb-opposed (for example, `read_file` versus a hypothetical `read_all_files`).
+3. **Documentation Gaps vs. Runtime Execution**: The linter evaluates documentation clarity and schema bounds exposed via `tools/list`, not runtime code behavior. A tool flagged for missing boundary language may enforce strict server-side path sandboxing in practice, while an unflagged tool with clear boundary text might still contain implementation defects.
 
 ---
 

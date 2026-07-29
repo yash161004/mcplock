@@ -92,6 +92,8 @@ Description similarity alone cannot reliably answer that. On the 14 real tools o
 
 > [!NOTE]
 > On the filesystem server, the schema substitutability gate eliminates 63 of 91 pairs before scoring. The remaining 4 flagged pairs (including the `read_file` / `read_text_file` / `read_media_file` cluster and `list_directory` / `list_directory_with_sizes`) sit cleanly in a 0.33–0.50 scoring gap above distinct tool pairs.
+> 
+> *The complete 91-pair evaluation dataset is available in [`docs/data/filesystem-server-ambiguity-scan.json`](https://github.com/yash161004/mcplock/blob/master/docs/data/filesystem-server-ambiguity-scan.json).*
 
 ### Scope — *"does a destructive tool declare its boundary?"*
 

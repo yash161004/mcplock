@@ -1,0 +1,924 @@
+{
+  "server_id": "npx-y-modelcontextprotocol-server-filesystem-d-mcp_project-sandbox",
+  "total_tools": 14,
+  "total_pairs": 91,
+  "threshold": 0.4,
+  "summary": {
+    "substitutable_pairs": 28,
+    "eliminated_by_schema_gate": 63,
+    "veto_triggered_pairs": 4,
+    "flagged_pairs": 4
+  },
+  "pairs": [
+    {
+      "tool_a": "list_directory",
+      "tool_b": "list_directory_with_sizes",
+      "cosine_similarity": 0.808,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.5,
+      "final_score": 0.808,
+      "veto_triggered": false,
+      "flagged": true
+    },
+    {
+      "tool_a": "read_file",
+      "tool_b": "read_media_file",
+      "cosine_similarity": 0.165,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.667,
+      "final_score": 0.667,
+      "veto_triggered": false,
+      "flagged": true
+    },
+    {
+      "tool_a": "read_file",
+      "tool_b": "read_text_file",
+      "cosine_similarity": 0.57,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.667,
+      "final_score": 0.667,
+      "veto_triggered": false,
+      "flagged": true
+    },
+    {
+      "tool_a": "read_text_file",
+      "tool_b": "read_media_file",
+      "cosine_similarity": 0.13,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.5,
+      "final_score": 0.5,
+      "veto_triggered": false,
+      "flagged": true
+    },
+    {
+      "tool_a": "create_directory",
+      "tool_b": "directory_tree",
+      "cosine_similarity": 0.099,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.333,
+      "final_score": 0.333,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "create_directory",
+      "tool_b": "list_directory",
+      "cosine_similarity": 0.206,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.333,
+      "final_score": 0.333,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "edit_file",
+      "tool_b": "move_file",
+      "cosine_similarity": 0.026,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.333,
+      "final_score": 0.333,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "list_directory",
+      "tool_b": "directory_tree",
+      "cosine_similarity": 0.167,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.333,
+      "final_score": 0.333,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_file",
+      "tool_b": "edit_file",
+      "cosine_similarity": 0.06,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.333,
+      "final_score": 0.333,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_file",
+      "tool_b": "move_file",
+      "cosine_similarity": 0.0,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.333,
+      "final_score": 0.333,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_file",
+      "tool_b": "write_file",
+      "cosine_similarity": 0.062,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.333,
+      "final_score": 0.333,
+      "veto_triggered": true,
+      "flagged": false
+    },
+    {
+      "tool_a": "write_file",
+      "tool_b": "edit_file",
+      "cosine_similarity": 0.118,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.333,
+      "final_score": 0.333,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "write_file",
+      "tool_b": "move_file",
+      "cosine_similarity": 0.027,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.333,
+      "final_score": 0.333,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "edit_file",
+      "tool_b": "get_file_info",
+      "cosine_similarity": 0.05,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.25,
+      "final_score": 0.25,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "list_directory",
+      "tool_b": "list_allowed_directories",
+      "cosine_similarity": 0.157,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.25,
+      "final_score": 0.25,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "move_file",
+      "tool_b": "get_file_info",
+      "cosine_similarity": 0.034,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.25,
+      "final_score": 0.25,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_file",
+      "tool_b": "get_file_info",
+      "cosine_similarity": 0.0,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.25,
+      "final_score": 0.25,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_file",
+      "tool_b": "read_multiple_files",
+      "cosine_similarity": 0.191,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.25,
+      "final_score": 0.25,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_media_file",
+      "tool_b": "edit_file",
+      "cosine_similarity": 0.043,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.25,
+      "final_score": 0.25,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_media_file",
+      "tool_b": "move_file",
+      "cosine_similarity": 0.023,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.25,
+      "final_score": 0.25,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_media_file",
+      "tool_b": "write_file",
+      "cosine_similarity": 0.074,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.25,
+      "final_score": 0.25,
+      "veto_triggered": true,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_multiple_files",
+      "tool_b": "search_files",
+      "cosine_similarity": 0.009,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.25,
+      "final_score": 0.25,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_text_file",
+      "tool_b": "edit_file",
+      "cosine_similarity": 0.064,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.25,
+      "final_score": 0.25,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_text_file",
+      "tool_b": "move_file",
+      "cosine_similarity": 0.036,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.25,
+      "final_score": 0.25,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_text_file",
+      "tool_b": "write_file",
+      "cosine_similarity": 0.089,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.25,
+      "final_score": 0.25,
+      "veto_triggered": true,
+      "flagged": false
+    },
+    {
+      "tool_a": "write_file",
+      "tool_b": "get_file_info",
+      "cosine_similarity": 0.08,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.25,
+      "final_score": 0.25,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "create_directory",
+      "tool_b": "list_directory_with_sizes",
+      "cosine_similarity": 0.179,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.2,
+      "final_score": 0.2,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "list_directory_with_sizes",
+      "tool_b": "directory_tree",
+      "cosine_similarity": 0.145,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.2,
+      "final_score": 0.2,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_media_file",
+      "tool_b": "get_file_info",
+      "cosine_similarity": 0.085,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.2,
+      "final_score": 0.2,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_media_file",
+      "tool_b": "read_multiple_files",
+      "cosine_similarity": 0.149,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.2,
+      "final_score": 0.2,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_text_file",
+      "tool_b": "get_file_info",
+      "cosine_similarity": 0.046,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.2,
+      "final_score": 0.2,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_text_file",
+      "tool_b": "read_multiple_files",
+      "cosine_similarity": 0.173,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.2,
+      "final_score": 0.2,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "create_directory",
+      "tool_b": "move_file",
+      "cosine_similarity": 0.176,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.176,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "list_directory_with_sizes",
+      "tool_b": "list_allowed_directories",
+      "cosine_similarity": 0.137,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.167,
+      "final_score": 0.167,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_multiple_files",
+      "tool_b": "create_directory",
+      "cosine_similarity": 0.164,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.164,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "list_directory_with_sizes",
+      "tool_b": "get_file_info",
+      "cosine_similarity": 0.16,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.0,
+      "final_score": 0.16,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "list_directory",
+      "tool_b": "get_file_info",
+      "cosine_similarity": 0.146,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.0,
+      "final_score": 0.146,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "write_file",
+      "tool_b": "create_directory",
+      "cosine_similarity": 0.14,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.14,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "list_directory",
+      "tool_b": "search_files",
+      "cosine_similarity": 0.137,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.137,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "list_directory",
+      "tool_b": "move_file",
+      "cosine_similarity": 0.129,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.129,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "search_files",
+      "tool_b": "list_allowed_directories",
+      "cosine_similarity": 0.124,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.124,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "list_directory_with_sizes",
+      "tool_b": "search_files",
+      "cosine_similarity": 0.119,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.119,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "list_directory_with_sizes",
+      "tool_b": "move_file",
+      "cosine_similarity": 0.112,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.112,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "directory_tree",
+      "tool_b": "list_allowed_directories",
+      "cosine_similarity": 0.1,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.1,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "create_directory",
+      "tool_b": "search_files",
+      "cosine_similarity": 0.096,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.096,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "create_directory",
+      "tool_b": "list_allowed_directories",
+      "cosine_similarity": 0.094,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.094,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "create_directory",
+      "tool_b": "get_file_info",
+      "cosine_similarity": 0.086,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.0,
+      "final_score": 0.086,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "move_file",
+      "tool_b": "list_allowed_directories",
+      "cosine_similarity": 0.081,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.081,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "directory_tree",
+      "tool_b": "get_file_info",
+      "cosine_similarity": 0.071,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.0,
+      "final_score": 0.071,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "directory_tree",
+      "tool_b": "move_file",
+      "cosine_similarity": 0.07,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.07,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "edit_file",
+      "tool_b": "search_files",
+      "cosine_similarity": 0.063,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.063,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "edit_file",
+      "tool_b": "list_allowed_directories",
+      "cosine_similarity": 0.056,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.056,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_multiple_files",
+      "tool_b": "move_file",
+      "cosine_similarity": 0.056,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.056,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "get_file_info",
+      "tool_b": "list_allowed_directories",
+      "cosine_similarity": 0.055,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.055,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_media_file",
+      "tool_b": "directory_tree",
+      "cosine_similarity": 0.055,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.0,
+      "final_score": 0.055,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_multiple_files",
+      "tool_b": "get_file_info",
+      "cosine_similarity": 0.055,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.055,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_multiple_files",
+      "tool_b": "list_directory",
+      "cosine_similarity": 0.054,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.054,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_multiple_files",
+      "tool_b": "edit_file",
+      "cosine_similarity": 0.049,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.049,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_multiple_files",
+      "tool_b": "list_directory_with_sizes",
+      "cosine_similarity": 0.047,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.047,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "directory_tree",
+      "tool_b": "search_files",
+      "cosine_similarity": 0.043,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.043,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_multiple_files",
+      "tool_b": "write_file",
+      "cosine_similarity": 0.043,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.043,
+      "veto_triggered": true,
+      "flagged": false
+    },
+    {
+      "tool_a": "edit_file",
+      "tool_b": "directory_tree",
+      "cosine_similarity": 0.042,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.042,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_text_file",
+      "tool_b": "list_directory",
+      "cosine_similarity": 0.039,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.0,
+      "final_score": 0.039,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "write_file",
+      "tool_b": "list_allowed_directories",
+      "cosine_similarity": 0.038,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.038,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "edit_file",
+      "tool_b": "create_directory",
+      "cosine_similarity": 0.037,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.037,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_multiple_files",
+      "tool_b": "directory_tree",
+      "cosine_similarity": 0.037,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.037,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "move_file",
+      "tool_b": "search_files",
+      "cosine_similarity": 0.035,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.035,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "search_files",
+      "tool_b": "get_file_info",
+      "cosine_similarity": 0.035,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.035,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_text_file",
+      "tool_b": "list_directory_with_sizes",
+      "cosine_similarity": 0.034,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.0,
+      "final_score": 0.034,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "write_file",
+      "tool_b": "list_directory",
+      "cosine_similarity": 0.034,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.034,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "edit_file",
+      "tool_b": "list_directory",
+      "cosine_similarity": 0.033,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.033,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_media_file",
+      "tool_b": "list_allowed_directories",
+      "cosine_similarity": 0.033,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.033,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_multiple_files",
+      "tool_b": "list_allowed_directories",
+      "cosine_similarity": 0.032,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.032,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_media_file",
+      "tool_b": "list_directory",
+      "cosine_similarity": 0.03,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.0,
+      "final_score": 0.03,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "write_file",
+      "tool_b": "list_directory_with_sizes",
+      "cosine_similarity": 0.03,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.03,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "edit_file",
+      "tool_b": "list_directory_with_sizes",
+      "cosine_similarity": 0.028,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.028,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_media_file",
+      "tool_b": "list_directory_with_sizes",
+      "cosine_similarity": 0.026,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.0,
+      "final_score": 0.026,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_text_file",
+      "tool_b": "list_allowed_directories",
+      "cosine_similarity": 0.025,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.025,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "write_file",
+      "tool_b": "directory_tree",
+      "cosine_similarity": 0.025,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.025,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_text_file",
+      "tool_b": "directory_tree",
+      "cosine_similarity": 0.017,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.0,
+      "final_score": 0.017,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_media_file",
+      "tool_b": "create_directory",
+      "cosine_similarity": 0.016,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.0,
+      "final_score": 0.016,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_text_file",
+      "tool_b": "create_directory",
+      "cosine_similarity": 0.012,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.0,
+      "final_score": 0.012,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "write_file",
+      "tool_b": "search_files",
+      "cosine_similarity": 0.01,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.01,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_media_file",
+      "tool_b": "search_files",
+      "cosine_similarity": 0.009,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.009,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_text_file",
+      "tool_b": "search_files",
+      "cosine_similarity": 0.007,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.007,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_file",
+      "tool_b": "create_directory",
+      "cosine_similarity": 0.0,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.0,
+      "final_score": 0.0,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_file",
+      "tool_b": "directory_tree",
+      "cosine_similarity": 0.0,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.0,
+      "final_score": 0.0,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_file",
+      "tool_b": "list_allowed_directories",
+      "cosine_similarity": 0.0,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.0,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_file",
+      "tool_b": "list_directory",
+      "cosine_similarity": 0.0,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.0,
+      "final_score": 0.0,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_file",
+      "tool_b": "list_directory_with_sizes",
+      "cosine_similarity": 0.0,
+      "schema_substitutable": true,
+      "name_affinity_score": 0.0,
+      "final_score": 0.0,
+      "veto_triggered": false,
+      "flagged": false
+    },
+    {
+      "tool_a": "read_file",
+      "tool_b": "search_files",
+      "cosine_similarity": 0.0,
+      "schema_substitutable": false,
+      "name_affinity_score": 0.0,
+      "final_score": 0.0,
+      "veto_triggered": false,
+      "flagged": false
+    }
+  ]
+}
