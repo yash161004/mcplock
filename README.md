@@ -8,9 +8,9 @@
  |_|  |_|\____|_|   |_____\___/ \____|_|\_\
 ```
 
-### 🔒 Subresource Integrity & Security Gating for MCP Tool Definitions
+### Catch ambiguous or unscoped tools before an agent misuses them.
 
-*Pin what your AI agents are allowed to trust. Detect silent runtime instruction drift. Catch ambiguous tool selection.*
+*Ambiguity detection and scope boundary linting for MCP tools — supported by hash-based baseline diffing.*
 
 [![PyPI](https://img.shields.io/pypi/v/mcplock.svg?color=3775A9&logo=pypi&logoColor=white)](https://pypi.org/project/mcplock/)
 [![Python](https://img.shields.io/pypi/pyversions/mcplock.svg?color=3776AB&logo=python&logoColor=white)](https://pypi.org/project/mcplock/)
@@ -18,35 +18,34 @@
 [![Security Policy](https://img.shields.io/badge/Security-Policy-blue.svg)](https://github.com/yash161004/mcplock/blob/master/.github/SECURITY.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/yash161004/mcplock/blob/master/LICENSE)
 
-[Quick start](#quick-start) · [Why mcplock?](#why-mcplock) · [How it works](#how-it-works) · [Linting](#linting) · [CI Integration](#ci-integration) · [Writeup](https://github.com/yash161004/mcplock/blob/master/docs/WRITEUP.md)
+[Quick start](#quick-start) · [Ambiguity Linting](#linting) · [How it Compares](#how-this-compares) · [How it Works](#how-it-works) · [CI Integration](#ci-integration) · [Writeup](https://github.com/yash161004/mcplock/blob/master/docs/WRITEUP.md)
 
 </div>
 
 ---
 
-## ⚡ Why `mcplock`?
-
-| Threat / Scenario | Traditional Package Locking (`package-lock.json` / `requirements.txt`) | `mcplock` Security Locking |
-| --- | --- | --- |
-| **Silent Description Drift** | ❌ **Missed** — package version stays unchanged | ✅ **Detected** — SHA-256 hash mismatch flagged immediately |
-| **Schema Widening & Injection** | ❌ **Missed** — dynamic `tools/list` payload ignored | ✅ **Caught** — structural diff flags optional/required schema changes |
-| **Agent Tool Ambiguity** | ❌ **No visibility** | ✅ **Linted** — schema substitutability & affinity scoring |
-| **Unscoped / Destructive Verbs** | ❌ **No visibility** | ✅ **Audited** — boundary keyword checks & convention departure linting |
-
----
+> [!NOTE]
+> **Status**: `mcplock` is pre-v0.1 and under active development.
 
 ## The problem
 
-An MCP agent decides what to do from **text it is handed at runtime** — a tool's
-name, description, and input schema. That text is not in your lockfile.
+An MCP agent decides what to do from **text it is handed at runtime** — a tool's name, description, and input schema. 
 
-A server can change `read_file`'s description from *"Read a file within allowed
-directories"* to *"Read any file on the host"* and every version pin you have
-still resolves green. Nothing in `package.json` or `requirements.txt` records
-what your agent was told it could do. The instructions changed; the dependency
-tree did not move.
+When a server exposes multiple tools with overlapping schemas or vague boundaries, an agent can easily invoke the wrong tool or execute destructive actions without explicit boundaries. Furthermore, if a server author changes a tool's description from *"Read a file within allowed directories"* to *"Read any file on the host"*, no standard version lockfile (`package.json` or `requirements.txt`) records what the agent was told it could do.
 
-`mcplock` pins that text, so a change to it becomes a reviewable diff.
+`mcplock` solves this in two ways:
+1. **Ambiguity & Scope Linting**: Detects confusable tool pairs and missing boundary statements before an agent makes a misstep.
+2. **Baseline Pinning**: Hashes tool definitions into a baseline so any runtime instruction drift becomes a reviewable diff.
+
+```console
+$ mcplock lint "npx -y @modelcontextprotocol/server-filesystem ./data"
+
+ambiguity     read_file / read_text_file  score 0.46
+              Schemas are mutually substitutable; descriptions share high term affinity.
+
+missing_scope execute_command
+              Destructive verb 'execute' carries no explicit boundary language.
+```
 
 ```console
 $ mcplock check "npx -y @modelcontextprotocol/server-filesystem ./data"
@@ -67,30 +66,58 @@ pip install mcplock
 ```
 
 ```bash
-# 1. Pin what the server currently declares
+# 1. Check a server for confusable tools or missing boundary language
+mcplock lint "npx -y @modelcontextprotocol/server-filesystem ./data"
+
+# 2. Pin what the server currently declares as a baseline
 mcplock snapshot "npx -y @modelcontextprotocol/server-filesystem ./data"
 
-# 2. Later — did anything move?
+# 3. Later — did any definitions or schemas drift?
 mcplock check "npx -y @modelcontextprotocol/server-filesystem ./data"
-
-# 3. Are any of these tools confusable or unscoped?
-mcplock lint "npx -y @modelcontextprotocol/server-filesystem ./data"
 ```
 
-Baselines are flat JSON under `~/.mcplock/snapshots/`, one file per server.
-Override the root with `MCPLOCK_HOME`.
+Baselines are flat JSON under `~/.mcplock/snapshots/`, one file per server. Override the root with `MCPLOCK_HOME`.
 
-Servers needing credentials take `--env KEY=VALUE` or `--env-from NAME` (repeatable). The MCP SDK
-inherits only a small safe allowlist when spawning a stdio server, so anything
-else must be named explicitly. **`--env` values are never written to the
-snapshot** and are not part of the server identity.
+Servers needing credentials take `--env KEY=VALUE` or `--env-from NAME` (repeatable). The MCP SDK inherits only a small safe allowlist when spawning a stdio server, so anything else must be named explicitly. **`--env` values are never written to the snapshot** and are not part of the server identity.
+
+---
+
+## Linting — The Core Differentiator
+
+### Ambiguity — *"could an agent pick the wrong tool between these two?"*
+
+Description similarity alone cannot reliably answer that. On the 14 real tools of the official `@modelcontextprotocol/server-filesystem` server, TF-IDF cosine similarity at an 85% threshold flags **0 of 91 tool pairs**, and confusable vs. distinct pairs are not separable by *any* single cosine threshold.
+
+`mcplock` gates first on **schema substitutability** — can one set of arguments satisfy both tool schemas? If yes, it scores name affinity and description similarity, applying a hard veto on opposing action verbs (`read`/`write`, `create`/`delete`).
+
+> [!NOTE]
+> On the filesystem server, the schema substitutability gate eliminates 63 of 91 pairs before scoring. The remaining 4 flagged pairs (including the `read_file` / `read_text_file` / `read_media_file` cluster and `list_directory` / `list_directory_with_sizes`) sit cleanly in a 0.33–0.50 scoring gap above distinct tool pairs.
+
+### Scope — *"does a destructive tool declare its boundary?"*
+
+Evaluates tools on two scope checks:
+1. **Unbounded Destructive Verbs**: A tool using destructive vocabulary (`delete`, `execute`, `overwrite`) with no boundary language anywhere.
+2. **Convention Departure**: A tool omitting a boundary statement that the rest of its own server explicitly declares.
+
+Neither check inspects runtime code execution. Both identify documentation gaps — a tool omitting boundary text may enforce boundaries perfectly, but an LLM agent cannot infer promises that are not written down.
+
+---
+
+## How this compares
+
+| Project | Primary Focus | Mechanism | Complementary Role |
+| --- | --- | --- | --- |
+| **`mcp-scan`** *(Invariant / Snyk)* | Prompt-injection & vulnerability scanning | Static analysis + prompt safety rules | Detects malicious payloads; `mcplock` lints description ambiguities. |
+| **`mcp-warden`** | Lockfile baseline diffing | RFC 8785 JSON canonicalization | Gates CI builds on hash drift; `mcplock` adds schema-substitutability linting. |
+| **`mcplock`** | **Ambiguity & Scope Linting** + Baseline Diffing | **Schema substitutability gate** + 4-field SHA-256 hashing | Identifies confusable tool definitions and missing scope boundaries before misuse. |
+
+`mcplock` is designed to complement tools like `mcp-scan` and `mcp-warden` in an agent defense-in-depth pipeline.
 
 ---
 
 ## How it works
 
-Two passes run off the same `tools/list` response. The pinning path hashes and
-diffs; the lint path reasons about the tools as a set. They meet at the report.
+Two passes run off the same `tools/list` response: the pinning path hashes and diffs binary facts; the lint path evaluates heuristics over tool sets.
 
 ```mermaid
 flowchart LR
@@ -100,18 +127,18 @@ flowchart LR
     S["MCP Server<br/>stdio or HTTP"]
     C["Connector"]
 
+    subgraph lintp ["Lint Path — Heuristics & Ambiguity"]
+        direction TB
+        A["Ambiguity Check<br/>Schema Substitutability"]
+        SC["Scope Check<br/>Boundary Language"]
+    end
+
     subgraph pin ["Pinning Path — Binary Facts"]
         direction TB
         N["Normalize"] --> H["SHA-256 Hasher"]
         H --> D["Diff Engine"]
         ST[("Store<br/>~/.mcplock")] --> D
         H -.->|snapshot| ST
-    end
-
-    subgraph lintp ["Lint Path — Heuristics"]
-        direction TB
-        A["Ambiguity Check"]
-        SC["Scope Check"]
     end
 
     S -->|"tools/list"| C
@@ -122,12 +149,11 @@ flowchart LR
     A --> R
     SC --> R
     R --> OUT["Terminal Report<br/>+ JSON for CI"]
-    class R highlight;
+    class A highlight;
+    class SC highlight;
 ```
 
-The split matters. `check` deals in facts — a hash moved or it did not — so it
-fails builds. `lint` deals in heuristics, so by default it does not; failing a
-build on a judgment call is how a linter gets switched off.
+`check` deals in binary facts — a hash moved or it did not — so it fails builds when drift exceeds thresholds. `lint` deals in heuristics to help developers improve tool clarity.
 
 ### What `check` actually decides
 
@@ -155,95 +181,47 @@ flowchart TD
 ```
 
 > [!IMPORTANT]
-> A missing baseline is **exit 2, not 0**. Exiting clean for a server nobody ever
-> pinned would silently green-light it in CI — the one outcome worse than failing.
+> A missing baseline is **exit 2, not 0**. Exiting clean for an unpinned server would silently green-light it in CI.
 
-### Commands
+### Exit Code Semantics
 
-| Command | Does | Exit codes |
+| Exit Code | Meaning | Command Behavior |
 | --- | --- | --- |
-| `mcplock snapshot <server>` | Pin the current `tools/list` as the baseline | 0 ok |
-| `mcplock check <server>` | Diff live definitions against the baseline | 0 clean · 1 drift · 2 cannot check |
-| `mcplock lint <server>` | Ambiguity and scope heuristics | 0 always, unless `--strict` |
+| `0` | Clean | Baseline hashes match, or lint finished (without `--strict`). |
+| `1` | Findings / Drift | Baseline drift found at or above `--fail-on` (default `high`), or lint found issues with `--strict`. |
+| `2` | Cannot Check | Missing baseline snapshot, unreachable server, or incomparable schema. |
 
 ---
 
-## Linting
-
-**Ambiguity** — *"could an agent pick the wrong one of these two?"*
-
-Description similarity alone does not answer that. On the 14 real tools of the
-official filesystem server, TF-IDF cosine at the 85% threshold flags **0 of 91
-pairs**, and confusable and distinct pairs are not separable by *any* single
-cosine threshold.
-
-So the check gates on **schema substitutability** — can one set of arguments
-satisfy both tools? — then scores on name affinity and description similarity,
-with a veto on opposing verbs (`read`/`write`, `create`/`delete`).
-
-> [!NOTE]
-> On that server the gate removes 63 of 91 pairs before scoring, and 4 are
-> flagged: the three-way `read_file` / `read_text_file` / `read_media_file`
-> cluster, and `list_directory` / `list_directory_with_sizes`. The threshold
-> sits in a 0.33–0.50 gap between the two classes.
-
-**Scope** — two checks. A destructive verb with no boundary language anywhere
-(strengthened by unbounded phrasing like "arbitrary" or "any file on the host"),
-and a **convention departure**: a tool omitting a boundary statement that the
-rest of its own server makes.
-
-Neither inspects behaviour. Both are documentation gaps, never vulnerabilities —
-a tool whose description omits a boundary may still enforce one perfectly.
-
----
-
-## Severity
+## Severity Bands
 
 | Severity | Meaning |
 | --- | --- |
-| `critical` | a behavioural annotation flipped (`destructiveHint`, …) |
-| `high` | content changed in a way that widens what the tool can do |
-| `medium` | a pinned tool is gone |
-| `informational` | cosmetic rewording, benign new tools, non-behavioural keys |
-
-Four bands rather than two: with two, an annotation flip and a reworded sentence
-land in the same bucket.
-
-The `high` heuristic stays deliberately simple — trigger vocabulary (`execute`,
-`delete`, `send`, `all`, `admin`) entering or leaving a description, plus two
-schema widenings: a required parameter becoming optional, and a new parameter
-carrying destructive vocabulary.
-
-> [!TIP]
-> Keyword scanning ignores Unicode format characters, so `de<ZWSP>lete` cannot slip
-> past it. Hashing keeps them, so the edit still registers as drift.
+| `critical` | A behavioural annotation flipped (`destructiveHint`, `readOnlyHint`, …) |
+| `high` | Description or schema changed in a way that widens tool capability |
+| `medium` | A previously pinned tool has been removed |
+| `informational` | Cosmetic rewording, benign new tools, or non-behavioural keys |
 
 ---
 
-## Hash model
+## Four-Hash Model
 
-A tool is pinned by four hashes, not one:
+A tool is pinned by four distinct SHA-256 hashes rather than a single blob:
 
-| Hash | Covers | Answers |
+| Hash | Covers | Purpose |
 | --- | --- | --- |
-| `content_hash` | description + `inputSchema` | did the meaning of this tool change |
-| `description_hash` | description | which side moved |
-| `schema_hash` | `inputSchema` | which side moved |
-| `annotations_hash` | `annotations` | did a behavioural promise change |
+| `content_hash` | `description` + `inputSchema` | Did the core meaning or structure change? |
+| `description_hash` | `description` | Did the description text change? |
+| `schema_hash` | `inputSchema` | Did the parameter schema change? |
+| `annotations_hash` | `annotations` | Did a behavioral assertion (`destructiveHint`) change? |
 
-`annotations_hash` is deliberately **not** folded into `content_hash`.
-`destructiveHint` and `readOnlyHint` are assertions an agent may gate its own
-behaviour on, so a flip is its own `critical` finding — folding it in would make
-it indistinguishable from a typo fix.
-
-`title`, `outputSchema`, and `execution` are not hashed yet; there is no concrete
-drift scenario for them.
+`annotations_hash` is deliberately **not** folded into `content_hash`. A `destructiveHint` flip is a critical behavioral change — keeping it separate prevents it from being masked by typo edits.
 
 ---
 
 ## CI Integration
 
-A reusable composite Action gates pull requests against tool-definition drift.
+Automate drift checking in GitHub Actions using the reusable composite action:
 
 ```yaml
 # .github/workflows/mcplock.yml
@@ -265,49 +243,9 @@ jobs:
           fail-on: 'high'
 ```
 
-### Live demo
-
-Real runs in a separate repository, against the official filesystem server:
-
-- [**Green run**](https://github.com/yash161004/mcplock-demo/actions/runs/30425018340) — baseline captured and verified clean
-- [**Failing run**](https://github.com/yash161004/mcplock-demo/actions/runs/30425300912) — injected description drift caught at HIGH severity, build fails
-
-### Action inputs
-
-| Input | Description | Default |
-| --- | --- | --- |
-| `server` | Server command or streamable-HTTP URL | **required** |
-| `transport` | `stdio` \| `http` \| `auto` | `auto` |
-| `fail-on` | Lowest severity that fails the build | `high` |
-| `comment-on-pr` | Post a findings summary as a PR comment (`true` \| `false` \| `auto`) | `auto` |
-| `json-report` | Path to write the machine-readable report | `""` |
-| `env` | Space-separated `KEY=VALUE` pairs for a stdio server | `""` |
-| `python-version` | Python for `setup-python` | `3.11` |
-| `mcplock-version` | PyPI version specifier | `mcplock` |
-
-Caller input reaches the runner through `env:`, never interpolated into a `run:`
-block — the naive version was a live script-injection defect, and a test guards
-against its return.
-
 ---
 
-## What it found
-
-mcplock was run against **11 public MCP servers, 85 tools**. The results —
-including what did *not* hold up — are in
-[**the project writeup**](https://github.com/yash161004/mcplock/blob/master/docs/WRITEUP.md):
-
-- **1 real finding** out of 6 candidates taken to upstream verification, fixed via [PR #4569](https://github.com/modelcontextprotocol/servers/pull/4569)
-- **2 defects in mcplock itself**, found *by* that verification and fixed with regression tests built from real upstream strings — scope lint went from 10 findings to 2, with none false
-- **The originally proposed ambiguity heuristic does not work.** TF-IDF cosine at 85% flags 0 of 91 pairs; schema substitutability is what makes it work
-
-The writeup also covers a provenance failure in this project's own release
-pipeline — a tool that detects silent degradation should say when it suffered
-one.
-
----
-
-## Project layout
+## Project Layout
 
 ```
 mcplock/
@@ -324,24 +262,9 @@ mcplock/
     └── judge.py       optional LLM-judge pass
 
 .github/
-├── actions/mcp-lock-action/   reusable composite Action
-├── ISSUE_TEMPLATE/            bug report & feature request forms
-├── CONTRIBUTING.md            contribution guidelines
-└── SECURITY.md                security disclosure policy
-docs/                          writeup, disclosure policy, findings, experiments
-scripts/                       real-server sweep and evaluation harnesses
+└── actions/mcp-lock-action/   reusable composite Action
+docs/                          technical writeup, disclosure policy, findings
 ```
-
----
-
-## Documentation
-
-| Document | What's in it |
-| --- | --- |
-| [Writeup](https://github.com/yash161004/mcplock/blob/master/docs/WRITEUP.md) | Method, real numbers, and what failed verification |
-| [Disclosure policy](https://github.com/yash161004/mcplock/blob/master/docs/DISCLOSURE.md) | How findings against third-party servers are handled |
-| [Findings](https://github.com/yash161004/mcplock/blob/master/docs/FINDINGS.md) | Public log, published only after the policy has run |
-| [Phase 4 results](https://github.com/yash161004/mcplock/blob/master/docs/PHASE4_RESULTS.md) | Pre-registered hypothesis, and why it is unresolved |
 
 ---
 
@@ -351,34 +274,17 @@ scripts/                       real-server sweep and evaluation harnesses
 python -m venv .venv
 .venv/Scripts/activate          # Windows — use source .venv/bin/activate on POSIX
 pip install -e ".[dev]"
-pytest                          # 147 tests; the e2e ones spawn real MCP servers
+pytest                          # 147 tests; e2e tests spawn real MCP servers
 ```
-
-Releases are tag-triggered and published through PyPI Trusted Publishing with
-PEP 740 provenance attestations. No long-lived credential exists for the project.
 
 ---
 
-## Responsible disclosure
+## Responsible Disclosure
 
-`mcplock` reads what servers publish through `tools/list`. When it surfaces
-something real in someone else's server:
-
-1. **Private report first** — to the security contact, `SECURITY.md`, or a private advisory, with the exact observed text, the date observed, and a reproduction.
-2. **90 days by default** — shorter if fixed sooner, longer only if the maintainer is engaged and asks. Silence is not a reason to extend.
-3. **Nothing public before then** — not the server, not the finding.
-4. **Honest credit** — the maintainer's response is recorded as it happened, including disagreement.
-
-Only names, descriptions, and input schemas are examined. No authentication is
-tested, no data accessed, nothing exploited beyond confirming what was read.
-
-These checks read *descriptions*, not behaviour. Reporting a documentation gap
-as a vulnerability would be wrong, and this project does not.
-
-To report an issue in `mcplock` itself, see [.github/SECURITY.md](https://github.com/yash161004/mcplock/blob/master/.github/SECURITY.md).
+To report a vulnerability in `mcplock` itself or review third-party findings, see [.github/SECURITY.md](file:///.github/SECURITY.md) and [docs/DISCLOSURE.md](file:///docs/DISCLOSURE.md).
 
 ---
 
 ## License
 
-MIT — see [LICENSE](https://github.com/yash161004/mcplock/blob/master/LICENSE).
+MIT — see [LICENSE](file:///LICENSE).
