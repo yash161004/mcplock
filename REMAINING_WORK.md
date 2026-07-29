@@ -88,13 +88,31 @@ one per run. The token is a workaround, not the destination.
 
 Retrying is free and never needs a re-tag: `gh run rerun <id> --failed`.
 
-### 1.2 `v1.0.1` is unreleased on the git side
+### 1.2 Releasing — bump before you tag
 
-PyPI has 1.0.1; the repo has tags `v0.1.1` and `v1.0.0` only. Tagging `v1.0.1`
-would fire the publish workflow against a version PyPI already holds, which
-fails at upload (PyPI forbids re-uploading a version) — so this is only worth
-doing once §1.1 is fixed, and then as part of the *next* version bump rather
-than retroactively. Either way: **confirm with the owner before any tag push.**
+The publish workflow's first step refuses to build unless the tag matches
+`pyproject.toml`. Tag `v1.0.2` was once pushed while pyproject still said
+1.0.1; the guard stopped it before the upload, which is what it is for. Nothing
+reached PyPI, but the tag then had to be deleted and re-created.
+
+Order that works — bump, commit, push, *then* tag:
+
+```bash
+# 1. bump BOTH pyproject.toml version and mcplock/__init__.py __version__
+#    (tests/test_packaging.py fails if they disagree)
+.venv/Scripts/python -m pytest tests -q
+git commit -am "release: vX.Y.Z" && git push origin master
+git tag vX.Y.Z && git push origin vX.Y.Z
+```
+
+If a tag was pushed early, delete it on both sides before re-tagging —
+`git push origin :refs/tags/vX.Y.Z` then `git tag -d vX.Y.Z`. Re-pushing a
+moved tag without deleting it first does not re-trigger cleanly.
+
+Note 1.0.1 was never tagged: PyPI already holds it, and PyPI forbids
+re-uploading a version, so a retroactive `v1.0.1` tag would only fail at upload.
+
+**Confirm with the owner before any tag push.**
 
 ### 1.3 Disclosure — send or don't
 
