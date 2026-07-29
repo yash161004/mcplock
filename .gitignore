@@ -8,7 +8,7 @@ build/
 report.json
 .mcplock/
 sandbox/phase4/
-.claude/
+.agent/
 dist/
 
 # Undisclosed third-party findings — must never be tracked while the repo is public.
