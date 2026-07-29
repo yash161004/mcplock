@@ -1,0 +1,175 @@
+{
+  "generated_at": "2026-07-29T16:11:46Z",
+  "note": "Scripted trajectories, no LLM. Tests the fixtura -> OpenEval runtime path only; says nothing about real model behaviour.",
+  "scenarios": {
+    "correct_first": {
+      "trace_file": "D:\\MCP_PROJECT\\docs\\phase4_runs\\stub_correct_first.trace",
+      "events_file": "D:\\MCP_PROJECT\\docs\\phase4_runs\\stub_correct_first.events.jsonl",
+      "trace_bytes": 575,
+      "events_recorded": 3,
+      "tool_calls": [
+        {
+          "tool_name": "read_media_file",
+          "arguments": {
+            "path": "logo.png"
+          }
+        }
+      ],
+      "scored": true,
+      "steps_parsed": 2,
+      "metric": "Tool Selection Accuracy",
+      "score": 1.0,
+      "passed": true,
+      "details": "Correctly called 1 of 1 expected tools.",
+      "findings": []
+    },
+    "wrong_then_recover": {
+      "trace_file": "D:\\MCP_PROJECT\\docs\\phase4_runs\\stub_wrong_then_recover.trace",
+      "events_file": "D:\\MCP_PROJECT\\docs\\phase4_runs\\stub_wrong_then_recover.events.jsonl",
+      "trace_bytes": 1506,
+      "events_recorded": 5,
+      "tool_calls": [
+        {
+          "tool_name": "read_text_file",
+          "arguments": {
+            "path": "logo.png"
+          }
+        },
+        {
+          "tool_name": "read_media_file",
+          "arguments": {
+            "path": "logo.png"
+          }
+        }
+      ],
+      "scored": true,
+      "steps_parsed": 4,
+      "metric": "Tool Selection Accuracy",
+      "score": 1.0,
+      "passed": true,
+      "details": "Correctly called 1 of 1 expected tools.",
+      "findings": []
+    },
+    "wrong_only": {
+      "trace_file": "D:\\MCP_PROJECT\\docs\\phase4_runs\\stub_wrong_only.trace",
+      "events_file": "D:\\MCP_PROJECT\\docs\\phase4_runs\\stub_wrong_only.events.jsonl",
+      "trace_bytes": 1038,
+      "events_recorded": 3,
+      "tool_calls": [
+        {
+          "tool_name": "read_text_file",
+          "arguments": {
+            "path": "logo.png"
+          }
+        }
+      ],
+      "scored": true,
+      "steps_parsed": 2,
+      "metric": "Tool Selection Accuracy",
+      "score": 0.0,
+      "passed": false,
+      "details": "Correctly called 0 of 1 expected tools.",
+      "findings": []
+    },
+    "tool_error": {
+      "trace_file": "D:\\MCP_PROJECT\\docs\\phase4_runs\\stub_tool_error.trace",
+      "events_file": "D:\\MCP_PROJECT\\docs\\phase4_runs\\stub_tool_error.events.jsonl",
+      "trace_bytes": 613,
+      "events_recorded": 3,
+      "tool_calls": [
+        {
+          "tool_name": "read_text_file",
+          "arguments": {
+            "path": "does_not_exist.txt"
+          }
+        }
+      ],
+      "scored": true,
+      "steps_parsed": 2,
+      "metric": "Tool Selection Accuracy",
+      "score": 0.0,
+      "passed": false,
+      "details": "Correctly called 0 of 1 expected tools.",
+      "findings": []
+    },
+    "long_trajectory": {
+      "trace_file": "D:\\MCP_PROJECT\\docs\\phase4_runs\\stub_long_trajectory.trace",
+      "events_file": "D:\\MCP_PROJECT\\docs\\phase4_runs\\stub_long_trajectory.events.jsonl",
+      "trace_bytes": 3392,
+      "events_recorded": 13,
+      "tool_calls": [
+        {
+          "tool_name": "list_directory",
+          "arguments": {
+            "path": "."
+          }
+        },
+        {
+          "tool_name": "read_text_file",
+          "arguments": {
+            "path": "notes.txt"
+          }
+        },
+        {
+          "tool_name": "list_directory",
+          "arguments": {
+            "path": "."
+          }
+        },
+        {
+          "tool_name": "read_text_file",
+          "arguments": {
+            "path": "logo.png"
+          }
+        },
+        {
+          "tool_name": "get_file_info",
+          "arguments": {
+            "path": "logo.png"
+          }
+        },
+        {
+          "tool_name": "read_media_file",
+          "arguments": {
+            "path": "logo.png"
+          }
+        }
+      ],
+      "scored": true,
+      "steps_parsed": 12,
+      "metric": "Tool Selection Accuracy",
+      "score": 1.0,
+      "passed": true,
+      "details": "Correctly called 1 of 1 expected tools.",
+      "findings": []
+    },
+    "header_only": {
+      "trace_file": "D:\\MCP_PROJECT\\docs\\phase4_runs\\stub_header_only.trace",
+      "events_file": "D:\\MCP_PROJECT\\docs\\phase4_runs\\stub_header_only.events.jsonl",
+      "trace_bytes": 94,
+      "events_recorded": 1,
+      "tool_calls": [],
+      "scored": true,
+      "steps_parsed": 0,
+      "metric": "Tool Selection Accuracy",
+      "score": 0.0,
+      "passed": false,
+      "details": "Correctly called 0 of 1 expected tools.",
+      "findings": []
+    }
+  },
+  "api_contract_findings": [
+    {
+      "library": "fixtura",
+      "where": "ExecutionRecorder.record_event",
+      "error": "mutates the caller's event dict in place instead of copying: {'step_id': \"0 -> 'step-000001'\"}. Callers that retain the dict \u2014 as phase4_experiment does to write .events.jsonl \u2014 end up logging the recorder's values, not their own. The step_id type also changes from int to str."
+    }
+  ],
+  "harness_findings": [
+    {
+      "library": "fixtura",
+      "where": "ExecutionRecorder.record_event",
+      "error": "mutates the caller's event dict in place instead of copying: {'step_id': \"0 -> 'step-000001'\"}. Callers that retain the dict \u2014 as phase4_experiment does to write .events.jsonl \u2014 end up logging the recorder's values, not their own. The step_id type also changes from int to str."
+    }
+  ]
+}
