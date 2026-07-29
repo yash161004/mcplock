@@ -96,6 +96,10 @@ concrete drift scenario for them yet.
 
 mcplock provides a reusable composite GitHub Action to gate pull requests against tool-definition drift in CI.
 
+> The Action is referenced from its source repository, which is currently
+> private — `uses:` will not resolve for anyone else until it is made public.
+> The `mcplock` CLI itself works anywhere it is installed.
+
 Add `.github/workflows/mcplock.yml` to your repository:
 
 ```yaml
@@ -140,6 +144,26 @@ pytest
 
 ## Responsible disclosure
 
-See [docs/DISCLOSURE.md](docs/DISCLOSURE.md). Findings against third-party
-servers are reported privately first and logged in
-[docs/FINDINGS.md](docs/FINDINGS.md) only after the disclosure window closes.
+mcplock reads tool definitions that servers publish through `tools/list`. When
+it surfaces something real in someone else's server, we handle it like this:
+
+1. **Private report first** — to the project's security contact, `SECURITY.md`,
+   or a private advisory, with the exact observed text, the date observed, and a
+   reproduction.
+2. **90 days by default** — shorter if it is fixed sooner, longer only if the
+   maintainer is engaged and asks. Silence is not a reason to extend.
+3. **Nothing public before then** — not the server, not the finding.
+4. **Honest credit** — the maintainer's response is recorded as it happened,
+   including disagreement.
+
+We report on names, descriptions, and input schemas only. We do not test
+authentication, access anyone's data, or exploit anything beyond confirming what
+we saw.
+
+Note what these checks are and are not: they read *descriptions*, not behaviour.
+A tool whose description omits a boundary may still enforce one perfectly. Those
+findings are documentation gaps, and reporting them as vulnerabilities would be
+wrong.
+
+To report an issue in mcplock itself, contact the maintainer privately. The same
+90-day standard applies to us.
