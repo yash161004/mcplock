@@ -13,9 +13,11 @@ jobs:
       name: pypi
       url: https://pypi.org/p/mcplock
     permissions:
-      # Required for PyPI Trusted Publishing (OIDC). No API token is stored in
-      # this repository, and none needs to be.
-      # Note: PyPI Trusted Publisher must be added on pypi.org (not test.pypi.org):
+      # Required for PyPI Trusted Publishing (OIDC), which is still the preferred
+      # path — see the "Publish package" step for how the token fallback works.
+      # Trusted Publisher must be registered on pypi.org (NOT test.pypi.org — that
+      # mismatch yields `invalid-publisher` indefinitely, which is how the earlier
+      # attempts failed):
       #   - Owner: yash161004
       #   - Repository name: mcplock
       #   - Workflow name: publish.yml
@@ -62,5 +64,35 @@ jobs:
           print("sdist is clean")
           PY
 
+      - name: Report which credential path will be used
+        # Four earlier releases failed at the upload step with `invalid-publisher`
+        # and were retried blind, because the log never said which path was taken.
+        # This prints that up front. It reports presence only — never the value.
+        env:
+          PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          if [ -n "$PYPI_API_TOKEN" ]; then
+            echo "PYPI_API_TOKEN is set -> uploading with an API token."
+          else
+            echo "PYPI_API_TOKEN is not set -> attempting Trusted Publishing (OIDC)."
+            echo "If this fails with 'invalid-publisher', the publisher is not"
+            echo "registered on pypi.org with the claims listed in this workflow."
+          fi
+
       - name: Publish package
+        # `password` is a fallback, not a replacement. gh-action-pypi-publish
+        # selects its auth path with:
+        #
+        #   [[ "${INPUT_USER}" == "__token__" && -z "${INPUT_PASSWORD}" ]] \
+        #       && TRUSTED_PUBLISHING=true || TRUSTED_PUBLISHING=false
+        #
+        # An unset secret interpolates to an empty string, so `-z` holds and OIDC
+        # is attempted exactly as before. Creating the secret switches to the
+        # token; deleting it switches back. Neither needs a workflow edit.
+        #
+        # Prefer fixing Trusted Publishing over keeping the token: a long-lived
+        # PyPI token in repository secrets is a standing credential, while OIDC
+        # mints a short-lived one per run.
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}

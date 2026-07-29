@@ -65,11 +65,26 @@ mismatch produces exactly this symptom indefinitely):
 Already ruled out: pending-vs-project publisher, the workflow-name field, the
 environment name.
 
-Alternative if that stays broken: the owner adds a repo secret `PYPI_API_TOKEN`
-(GitHub → Settings → Secrets and variables → Actions), and an agent adds
-`with: password: ${{ secrets.PYPI_API_TOKEN }}` to the publish step in
-`.github/workflows/publish.yml`. **Agents must never handle a PyPI token
-directly.**
+**Fallback is already wired.** `.github/workflows/publish.yml` passes
+`password: ${{ secrets.PYPI_API_TOKEN }}` to the publish step. The only step
+left is the owner creating that secret (GitHub → Settings → Secrets and
+variables → Actions → `PYPI_API_TOKEN`). No workflow edit is needed to switch
+paths in either direction:
+
+- Secret absent → interpolates to an empty string → the action's
+  `[[ "$INPUT_USER" == "__token__" && -z "$INPUT_PASSWORD" ]]` test holds → it
+  attempts Trusted Publishing, exactly as before.
+- Secret present → it uploads with the token.
+
+Deleting the secret reverts to OIDC. The workflow also prints which path it is
+taking before uploading (presence only, never the value) — the earlier releases
+failed and were retried blind because the log never said.
+
+**Prefer fixing Trusted Publishing over keeping the token.** A long-lived PyPI
+token in repository secrets is a standing credential; OIDC mints a short-lived
+one per run. The token is a workaround, not the destination.
+
+**Agents must never handle a PyPI token directly.**
 
 Retrying is free and never needs a re-tag: `gh run rerun <id> --failed`.
 
