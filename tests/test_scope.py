@@ -130,6 +130,66 @@ class TestTruePositives:
         assert "mystery_tool" in flagged(tools)
 
 
+class TestVerifiedFalsePositives:
+    """Cases that fired against real servers and turned out to be wrong.
+
+    Verified upstream on 2026-07-29. Every string here is the real description
+    text, not an invented example. The constraint these encode: silence these
+    *without* silencing `read_file` on the filesystem server, which was the one
+    finding that survived verification (PR #4569).
+    """
+
+    def test_named_subsystem_is_a_boundary(self) -> None:
+        """server-memory: 0 of 9 tools use filesystem phrasing, and none need to."""
+        for description in (
+            "Delete multiple entities and their associated relations from the knowledge graph",
+            "Delete specific observations from entities in the knowledge graph",
+            "Delete multiple relations from the knowledge graph",
+            "Execute a SELECT query on the SQLite database",
+        ):
+            assert states_scope(description), f"named subsystem not recognised: {description!r}"
+
+    def test_memory_server_style_tools_are_not_flagged(self) -> None:
+        tools = [
+            tool("delete_entities", "Delete multiple entities and their associated "
+                                    "relations from the knowledge graph"),
+            tool("create_entities", "Create multiple new entities in the knowledge graph"),
+            tool("read_graph", "Read the entire knowledge graph"),
+        ]
+
+        assert find_scope_issues(tools) == []
+
+    def test_drag_and_drop_is_not_deletion(self) -> None:
+        """@playwright/mcp: 'drop' matched the gesture, not the SQL sense."""
+        tools = [
+            tool("browser_drag", "Perform drag and drop between two elements on the page"),
+            tool("browser_drop", "Drop dragged data onto the target element on the page"),
+            tool("browser_file_upload", "Upload one or more files to the page"),
+        ]
+
+        assert find_scope_issues(tools) == []
+
+    def test_drop_is_still_destructive_with_a_qualifying_object(self) -> None:
+        """The SQL sense must survive the fix, or the fix went too far."""
+        findings = find_scope_issues([tool("drop_table", "Drop the users table permanently")])
+
+        assert [f.tool_name for f in findings] == ["drop_table"]
+        assert "drop" in findings[0].signals["destructive_verbs"]
+
+    def test_generic_objects_are_not_boundaries(self) -> None:
+        """'on the host' names no boundary — it is the opposite of one."""
+        for description in (
+            "Delete files on the host",
+            "Execute a command in the system",
+            "Remove data from the machine",
+        ):
+            assert not states_scope(description), f"wrongly treated as scoped: {description!r}"
+
+    def test_the_surviving_finding_still_fires(self, filesystem_tools: list[dict]) -> None:
+        """F-001 is the regression that matters: both fixes must leave it alone."""
+        assert flagged(filesystem_tools) == {"read_file"}
+
+
 class TestFindingShape:
     def test_record_matches_the_documented_shape(self, filesystem_tools: list[dict]) -> None:
         record = find_scope_issues(filesystem_tools)[0].to_dict()
