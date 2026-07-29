@@ -23,7 +23,7 @@ inputs:
   env:
     description: >-
       Space-separated KEY=VALUE pairs passed to a stdio server. Prefer passing
-      secrets via the workflow''s own env and referencing them here, rather than
+      secrets via the workflow's own env and referencing them here, rather than
       inlining literals.
     required: false
     default: ''
@@ -38,6 +38,14 @@ inputs:
     description: 'Python version for setup-python'
     required: false
     default: '3.11'
+  comment-on-pr:
+    description: 'Post a PR comment summarizing findings (true | false | auto)'
+    required: false
+    default: 'auto'
+  github-token:
+    description: 'GitHub token for posting PR comments'
+    required: false
+    default: '${{ github.token }}'
 
 runs:
   using: 'composite'
@@ -80,9 +88,10 @@ runs:
         if [ -n "$MCPLOCK_FAIL_ON" ]; then
           CMD_ARGS+=("--fail-on" "$MCPLOCK_FAIL_ON")
         fi
-        if [ -n "$MCPLOCK_JSON_REPORT" ]; then
-          CMD_ARGS+=("--json" "$MCPLOCK_JSON_REPORT")
-        fi
+
+        REPORT_PATH="${MCPLOCK_JSON_REPORT:-mcplock-report.json}"
+        CMD_ARGS+=("--json" "$REPORT_PATH")
+
         if [ -n "$MCPLOCK_ENV" ]; then
           # read -ra splits on whitespace without globbing or re-evaluating the
           # value, which a bare `for pair in $MCPLOCK_ENV` would do.
@@ -93,3 +102,107 @@ runs:
         fi
 
         mcplock check "$MCPLOCK_SERVER" "${CMD_ARGS[@]}"
+
+    - name: Post PR comment
+      if: always()
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        COMMENT_ON_PR: ${{ inputs.comment-on-pr }}
+        MCPLOCK_JSON_REPORT: ${{ inputs.json-report }}
+        EVENT_PATH: ${{ github.event_path }}
+        REPOSITORY: ${{ github.repository }}
+        SERVER_ID: ${{ inputs.server }}
+      run: |
+        python -c '
+        import json
+        import os
+        import urllib.request
+        import urllib.error
+
+        token = os.environ.get("GITHUB_TOKEN", "")
+        comment_mode = os.environ.get("COMMENT_ON_PR", "auto").lower()
+        if comment_mode == "false" or not token:
+            print("PR commenting disabled or token missing; skipping.")
+            exit(0)
+
+        pr_number = None
+        event_path = os.environ.get("EVENT_PATH", "")
+        if event_path and os.path.exists(event_path):
+            try:
+                with open(event_path, "r", encoding="utf-8") as f:
+                    event = json.load(f)
+                pr_number = event.get("pull_request", {}).get("number")
+                if not pr_number and "issue" in event and "pull_request" in event["issue"]:
+                    pr_number = event["issue"]["number"]
+            except Exception as e:
+                print(f"Error reading event payload: {e}")
+
+        if not pr_number:
+            if comment_mode == "true":
+                print("No PR number found in GitHub event context.")
+            else:
+                print("Not a pull request event; skipping PR comment.")
+            exit(0)
+
+        repo = os.environ.get("REPOSITORY", "")
+        if not repo:
+            print("No repository context found; skipping PR comment.")
+            exit(0)
+
+        report_path = os.environ.get("MCPLOCK_JSON_REPORT") or "mcplock-report.json"
+        findings = []
+        counts = {}
+        server_id = os.environ.get("SERVER_ID", "")
+        if os.path.exists(report_path):
+            try:
+                with open(report_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                findings = data.get("findings", [])
+                counts = data.get("counts", {})
+                server_id = data.get("server_id", server_id)
+            except Exception as e:
+                print(f"Error loading report from {report_path}: {e}")
+
+        lines = ["### 🔒 mcplock check report", ""]
+        lines.append(f"**Server:** `{server_id}`")
+        lines.append("")
+
+        if not findings:
+            lines.append("✅ **No drift detected** against the pinned baseline.")
+        else:
+            summary_str = "  ".join(f"{k}: {v}" for k, v in counts.items() if v)
+            lines.append(f"⚠️ **{len(findings)} finding(s) detected** ({summary_str}):")
+            lines.append("")
+            lines.append("| Severity | Tool | Change | Reasons / Details |")
+            lines.append("| --- | --- | --- | --- |")
+            for f in findings:
+                sev = str(f.get("severity", "unknown")).upper()
+                tool = str(f.get("tool_name", ""))
+                ch = str(f.get("change_type", ""))
+                reasons = "<br>".join(str(r) for r in f.get("reasons", []))
+                lines.append(f"| **{sev}** | `{tool}` | {ch} | {reasons} |")
+
+        body = "\n".join(lines)
+
+        url = f"https://api.github.com/repos/{repo}/issues/{pr_number}/comments"
+        req = urllib.request.Request(
+            url,
+            data=json.dumps({"body": body}).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Accept": "application/vnd.github+json",
+                "X-GitHub-Api-Version": "2022-11-28",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+
+        try:
+            with urllib.request.urlopen(req) as resp:
+                print(f"Posted PR comment successfully (HTTP {resp.status}).")
+        except urllib.error.HTTPError as err:
+            print(f"Failed to post PR comment: HTTP {err.code} {err.reason}")
+        except Exception as err:
+            print(f"Failed to post PR comment: {err}")
+        '

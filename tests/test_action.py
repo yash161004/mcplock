@@ -27,8 +27,16 @@ class TestActionDefinition:
         action_path = Path(__file__).parent.parent / ".github" / "actions" / "mcp-lock-action" / "action.yml"
         content = action_path.read_text(encoding="utf-8")
 
-        for expected in ("server:", "transport:", "fail-on:", "json-report:", "env:", "python-version:", "mcplock-version:"):
-            assert expected in content
+        for expected in ("server:", "transport:", "fail-on:", "json-report:", "env:", "python-version:", "mcplock-version:", "comment-on-pr:", "github-token:"):
+            assert expected in content, f"Missing input: {expected}"
+
+    def test_pr_comment_step_exists(self) -> None:
+        action_path = Path(__file__).parent.parent / ".github" / "actions" / "mcp-lock-action" / "action.yml"
+        content = action_path.read_text(encoding="utf-8")
+        assert "name: Post PR comment" in content
+        assert "COMMENT_ON_PR:" in content
+        assert "GITHUB_TOKEN:" in content
+
 
 
 ACTION_PATH = Path(__file__).parent.parent / ".github" / "actions" / "mcp-lock-action" / "action.yml"

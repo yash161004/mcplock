@@ -157,7 +157,7 @@ rather than assume.
 ### 3.4 Doc drift
 
 Re-check counts before trusting any doc. As of 2026-07-29 the suite is
-**145 tests**:
+**146 tests**:
 
 ```bash
 .venv/Scripts/python -m pytest tests -q     # ~95s, e2e spawns real MCP servers

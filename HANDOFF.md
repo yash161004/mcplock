@@ -22,7 +22,7 @@ code safely; ask the owner for `CLAUDE.md` if you need the full rationale.
 | 5 — report polish + GitHub Action | done |
 | 6 — ship | in progress — see REMAINING_WORK.md |
 
-145 tests pass: `.venv/Scripts/python -m pytest tests -q` (~90s; the `e2e` ones
+146 tests pass: `.venv/Scripts/python -m pytest tests -q` (~90s; the `e2e` ones
 spawn real MCP servers over stdio).
 
 ## The one hard constraint
