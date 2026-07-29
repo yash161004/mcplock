@@ -48,9 +48,18 @@ dev = ["pytest>=8.0.0", "pytest-asyncio>=0.23.0"]
 # fixtura 2.0.0+ moves every package under the `fixtura.` namespace. Both Phase 4
 # scripts (`scripts/phase4_experiment.py` and `scripts/phase4_p2_and_pipeline.py`)
 # have been updated to `from fixtura.recorder.recorder import ExecutionRecorder`,
-# so mcplock now pins fixtura>=2.0.0.
+# so mcplock pins fixtura>=2.0.0 at minimum.
+#
+# The floor is 2.0.1, not 2.0.0, and that is a correctness requirement rather
+# than housekeeping. On 2.0.0, ExecutionRecorder.record_event mutated the event
+# dict passed to it, overwriting step_id in place (int -> str). Both Phase 4
+# scripts record each event and then keep it to write the plain-text
+# .events.jsonl beside the trace — which exists so a run can be audited without
+# decompressing zstd frames. Under 2.0.0 that log reports fixtura's step_ids
+# instead of the ones the harness emitted, so the audit log silently stops being
+# an independent record. Fixed in 2.0.1 (fixtura-core#16).
 validate = [
-    "fixtura>=2.0.0",
+    "fixtura>=2.0.1",
     "openeval-core>=0.2.1",
 ]
 
