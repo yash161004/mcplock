@@ -1,7 +1,7 @@
 # Handoff
 
 Written for a fresh agent (Antigravity, OpenCode, or a new Claude Code session)
-picking this repo up cold. Remaining work is in [TASKS.md](TASKS.md).
+picking this repo up cold. Remaining work is in [REMAINING_WORK.md](REMAINING_WORK.md).
 
 `CLAUDE.md` holds the original brief plus **"Deviations from this brief (decided,
 do not fix back)"** — the choices that look wrong against the spec and are not.
@@ -20,7 +20,7 @@ code safely; ask the owner for `CLAUDE.md` if you need the full rationale.
 | 4 — real-server sweep | done (11/12 reached; all six findings verified, only F-001 real) |
 | 4 — LLM hypothesis test | **stopped, deliberately** — [docs/PHASE4_RESULTS.md](docs/PHASE4_RESULTS.md) |
 | 5 — report polish + GitHub Action | done |
-| 6 — ship | in progress — see TASKS.md |
+| 6 — ship | in progress — see REMAINING_WORK.md |
 
 145 tests pass: `.venv/Scripts/python -m pytest tests -q` (~90s; the `e2e` ones
 spawn real MCP servers over stdio).
@@ -52,8 +52,8 @@ remaining three are real-but-not-worth-reporting. Verdicts and reasoning are in
 
 ## Next work
 
-See **[TASKS.md](TASKS.md)** — seven tasks with acceptance criteria, plus a list
-of things deliberately *not* being done so they do not get reopened.
+See **[REMAINING_WORK.md](REMAINING_WORK.md)** — the single task list, covering
+mcplock, fixtura and OpenEval, with hard constraints and a recommended order.
 
 The blocking one: PyPI Trusted Publishing is unconfigured, so the `v0.1.1` tag
 built and failed with `invalid-publisher` and PyPI still serves 0.1.0. Owner

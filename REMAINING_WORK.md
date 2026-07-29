@@ -110,26 +110,33 @@ is the only reason the cosmetic 1.1.2 was declined.
 Per `HANDOFF.md`, phases 0–5 are done; 6 is not started. Mostly owner decisions,
 not code.
 
-### 3.1 Disclosure decision — OWNER ONLY, agents must not send anything
+### 3.1 Disclosure — DONE, do not reopen
 
-Findings **F-001..F-006** are logged in `docs/INTERNAL_FINDINGS.md` with private
-disclosure drafts in `docs/disclosure_drafts/`. **Nothing has been sent.**
+All six findings were verified against upstream source on 2026-07-29. **Only
+F-001 was real.** It is fixed by PR modelcontextprotocol/servers#4569 (open).
 
-Two things are unresolved and both are the owner's call:
+| ID | Verdict |
+| --- | --- |
+| F-001 | Real. Reported via PR #4569. |
+| F-002 | **Retracted** — mcplock false positive (filesystem-biased scope check) |
+| F-003 | Real, but `server-everything` is a test server by design |
+| F-004 | Descriptions genuinely distinguish themselves; too weak to send |
+| F-005 | **Mostly false positive** — "drop" matched the drag gesture |
+| F-006 | Repo archived since 2025-05-28; ineligible for reports |
 
-1. **Whether to disclose at all.** These are documentation-clarity observations,
-   not defects. Three GitHub issues about missing sentences may read as noise.
-2. **None are upstream-verified.** Criterion 1 of each finding ("check the
-   current upstream source, not this fixture") is unmet for all six. Disclosing
-   unverified findings is worse than not disclosing.
+Both linter defects F-002/F-005 exposed are fixed: the sweep went from 10 scope
+findings to **2, with none false**. Verdicts and reasoning live in
+`.private/INTERNAL_FINDINGS.md` (not `docs/` — that path is stale above).
 
-An agent may *verify* findings against current upstream sources. An agent must
-**never send** a disclosure, open an upstream issue, or email a maintainer.
+**Remaining actions:**
+- Delete `.private/disclosure_drafts/mcp_server_sqlite.md` and
+  `playwright_mcp.md` — they correspond to F-006 and F-005 and must not be sent.
+- If PR #4569 merges, F-001's window closes: move it into `docs/FINDINGS.md`
+  (public, currently an empty placeholder) linking the PR. If it is rejected or
+  ignored for 90 days, record *that* — `docs/DISCLOSURE.md` §4 requires the
+  maintainer's response be reported honestly, including disagreement.
 
-Note the repo is now **public**, and `docs/INTERNAL_FINDINGS.md` /
-`docs/disclosure_drafts/` were removed from the tree. The publish workflow now
-has a guard that fails the build if either reaches the sdist — verified against a
-deliberately dirty tarball. **Do not weaken that guard.**
+An agent must still **never send** anything to a maintainer without the owner.
 
 ### 3.2 Phase 5 gap — the Action does not post a PR comment
 
@@ -147,13 +154,52 @@ Work the checklist at the end of `CLAUDE.md`. Several items are already done
 (LICENSE added, findings untracked, README made standalone for PyPI) — verify
 rather than assume.
 
-### 3.4 Stale doc
+### 3.4 Doc drift
 
-`HANDOFF.md` says the suite is **125 tests**; it is **129**. Verified:
+Re-check counts before trusting any doc. As of 2026-07-29 the suite is
+**145 tests**:
 
 ```bash
-.venv/Scripts/python -m pytest tests -q     # ~90s, e2e spawns real MCP servers
+.venv/Scripts/python -m pytest tests -q     # ~95s, e2e spawns real MCP servers
 ```
+
+### 3.5 Run the Action in a real external repo
+
+Brief §6 success metric, not done. Create a small public repo consuming the
+published Action against `@modelcontextprotocol/server-filesystem` (no
+credentials needed), with a committed baseline. Get one green run and one
+deliberately-failed run showing drift caught. Link both from README.md.
+
+### 3.6 Write the public writeup
+
+Brief §6, not done — the main credibility deliverable. Real numbers available:
+
+- 85 tools across 11 public servers; 1 unreachable
+- Scope lint: **10 findings → 2** after fixing two verified false positives
+- Ambiguity: the brief's TF-IDF-at-85% flags **0 of 91 pairs**; the
+  schema-substitutability gate removes 63 before scoring and flags 4, with a
+  0.33–0.50 margin between classes
+- One finding verified upstream and fixed via PR #4569
+- Two linter defects found *by* verification, both fixed with regression tests
+  built from real upstream strings
+
+**The honest framing is the interesting one:** most candidates did not survive
+verification and two were the tool's own fault. A writeup claiming six findings
+would be false. One claiming a single real finding plus a precision problem that
+got measured and fixed is credible and more useful.
+
+Note the Phase 4 hypothesis was pre-registered and is **permanently unresolved**
+— P1 needed paid API access and was never run (`docs/PHASE4_RESULTS.md`). Do not
+imply it was confirmed.
+
+Draft into `.private/` for owner review. **Do not publish** — owner's call, and
+it names third-party servers.
+
+### 3.7 Registry submission
+
+Investigate whether an MCP registry accepts a *scanning tool* rather than a
+server. If none fits, record that and close it rather than forcing a bad fit.
+
 
 ---
 
