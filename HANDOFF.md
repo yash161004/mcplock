@@ -17,12 +17,12 @@ code safely; ask the owner for `CLAUDE.md` if you need the full rationale.
 | 1 — normalize / hash / store / `snapshot` | done (`7daeed0`) |
 | 2 — diff / severity / `check` | done (`1460302`) |
 | 3 — ambiguity + scope lint / `lint` | done (`af07fa2`) |
-| 4 — real-server sweep | done (11/12 reached, findings F-001..F-006 candidate-logged) |
+| 4 — real-server sweep | done (11/12 reached; all six findings verified, only F-001 real) |
 | 4 — LLM hypothesis test | **stopped, deliberately** — [docs/PHASE4_RESULTS.md](docs/PHASE4_RESULTS.md) |
 | 5 — report polish + GitHub Action | done |
-| 6 — ship | not started |
+| 6 — ship | in progress — see TASKS.md |
 
-139 tests pass: `.venv/Scripts/python -m pytest tests -q` (~90s; the `e2e` ones
+145 tests pass: `.venv/Scripts/python -m pytest tests -q` (~90s; the `e2e` ones
 spawn real MCP servers over stdio).
 
 ## The one hard constraint
@@ -43,25 +43,21 @@ repository. They name third-party servers, none of whose maintainers has been
 contacted; publishing them would breach `docs/DISCLOSURE.md`. **Nothing has been
 sent** — sending is the owner's decision, not an agent's.
 
-## Next task: Phase 6 (ship)
+All six were verified against upstream source on 2026-07-29. **Only F-001 was
+real**, and it is fixed by PR modelcontextprotocol/servers#4569. Two of the other
+five (F-002, F-005) were mcplock's own false positives — both linter defects are
+now fixed, taking the sweep from 10 scope findings to 2 with none false. The
+remaining three are real-but-not-worth-reporting. Verdicts and reasoning are in
+`.private/INTERNAL_FINDINGS.md`; do not reopen them.
 
-Blocked on owner decisions more than on code. In rough order:
+## Next work
 
-1. **Decide whether the F-00x findings are worth disclosing at all.** They are
-   documentation-clarity observations, not defects. Three GitHub issues about
-   missing sentences may read as noise; the drafts are honest and proportionate
-   if you do send them.
-2. **None of them are upstream-verified.** See the re-observation caveat below.
-   Criterion 1 of each finding ("check the current upstream source, not this
-   fixture") is still unmet for all six.
-3. Publish to PyPI so the Action's default `pip install mcplock` resolves. The
-   artifacts are built and verified; only the upload is outstanding.
-4. Work the pre-publish checklist at the end of the local `CLAUDE.md`. Items 1
-   and 2 are done — the findings and `CLAUDE.md` itself are out of the repo.
+See **[TASKS.md](TASKS.md)** — seven tasks with acceptance criteria, plus a list
+of things deliberately *not* being done so they do not get reopened.
 
-Still unbuilt from the brief's Phase 5: the Action does **not** post a PR
-comment summarising lint findings. `check` in CI works; the comment step does not
-exist.
+The blocking one: PyPI Trusted Publishing is unconfigured, so the `v0.1.1` tag
+built and failed with `invalid-publisher` and PyPI still serves 0.1.0. Owner
+action; the exact fields to register are in T1.
 
 ## Traps
 
