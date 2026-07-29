@@ -15,14 +15,14 @@ code safely; ask the owner for `CLAUDE.md` if you need the full rationale.
 |---|---|
 | 0 — setup, connector, first fixture | done (`a1e2237`) |
 | 1 — normalize / hash / store / `snapshot` | done (`7daeed0`) |
-| 2 — diff / severity / `check` | done (`d51dae0`) |
-| 3 — ambiguity + scope lint / `lint` | done (`6d53d2a`) |
+| 2 — diff / severity / `check` | done (`1460302`) |
+| 3 — ambiguity + scope lint / `lint` | done (`af07fa2`) |
 | 4 — real-server sweep | done (11/12 reached, findings F-001..F-006 candidate-logged) |
 | 4 — LLM hypothesis test | **stopped, deliberately** — [docs/PHASE4_RESULTS.md](docs/PHASE4_RESULTS.md) |
 | 5 — report polish + GitHub Action | done |
 | 6 — ship | not started |
 
-125 tests pass: `.venv/Scripts/python -m pytest tests -q` (~90s; the `e2e` ones
+139 tests pass: `.venv/Scripts/python -m pytest tests -q` (~90s; the `e2e` ones
 spawn real MCP servers over stdio).
 
 ## The one hard constraint
@@ -34,14 +34,14 @@ budget to negotiate. Everything below is free.
 ## Phase 4 sweep — done
 
 `scripts/phase4_sweep.py` ran: **11 of 12 servers reached, 85 tools linted**,
-producing 6 ambiguity and 10 missing-scope findings. Raw output in
-`docs/phase4_runs/sweep.json`; `brave-search` is recorded unreachable, which is
-kept deliberately (that is ecosystem data, not a failed run).
+producing 6 ambiguity and 10 missing-scope findings. `brave-search` is recorded
+unreachable, kept deliberately — that is ecosystem data, not a failed run.
 
-Findings F-001..F-006 are logged in
-[docs/INTERNAL_FINDINGS.md](docs/INTERNAL_FINDINGS.md); private disclosure
-drafts sit in `docs/disclosure_drafts/`. **Nothing has been sent** — sending is
-the owner's decision, not an agent's.
+Findings F-001..F-006, the three unsent disclosure drafts, and the raw
+per-server finding JSON live in the gitignored **`.private/`**, not in this
+repository. They name third-party servers, none of whose maintainers has been
+contacted; publishing them would breach `docs/DISCLOSURE.md`. **Nothing has been
+sent** — sending is the owner's decision, not an agent's.
 
 ## Next task: Phase 6 (ship)
 
@@ -106,5 +106,10 @@ regression, even though each looks like a cleanup.
 ## Environment
 
 Windows, Python 3.14.2, venv at `.venv`. `node`/`npx` present. Repo is
-`github.com/yash161004/mcplock`, **private**, branch `master`.
+`github.com/yash161004/mcplock`, **public**, branch `master`.
 `docs/phase4_runs/` holds raw experiment output — keep raw logs, not summaries.
+
+History was rewritten on 2026-07-29 with `git filter-repo` to purge `CLAUDE.md`,
+`INTERNAL_FINDINGS.md`, the disclosure drafts, and the per-server finding JSON,
+then force-pushed. Commit SHAs from before that date do not resolve; any clone
+predating it must be re-cloned rather than pulled.

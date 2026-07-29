@@ -1,7 +1,8 @@
 # Phase 4 — results
 
 Against the pre-registration in [PHASE4_HYPOTHESIS.md](PHASE4_HYPOTHESIS.md)
-(committed `151b823`, 2026-07-28 20:50:32 +0530, before any harness code existed).
+(committed `aeccd85`, 2026-07-28 20:50:32 +0530, before any harness code existed — the
+SHA changed in a later history rewrite; the author date did not).
 
 **Status: incomplete. The hypothesis is not resolved.** P2 is confirmed against
 the real server; P1 and P3 are unrun, blocked on credentials. Under the
